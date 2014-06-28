@@ -1,36 +1,44 @@
 
 class SQLType:
 
-    def __init__(self, nullable=True):
-        self.nullable = nullable
+    def __init__(self):
+        self.default = None
 
-    def accept(self, visitor):
+    def render_sql(self, renderer):
         raise NotImplementedError
 
 
 class Integer(SQLType):
 
-    def accept(self, visitor):
-        visitor.visit_integer(self)
+    def __init__(self):
+        super().__init__()
+        self.autoincrement = None
+
+    def render_sql(self, renderer):
+        return renderer.render_integer(self)
 
 
 class Timestamp(SQLType):
 
-    def accept(self, visitor):
-        visitor.visit_timestamp(self)
+    def __init__(self):
+        super().__init__()
+        self.with_timezone = True
+
+    def render_sql(self, renderer):
+        return renderer.render_timestamp(self)
 
 
 class Text(SQLType):
 
-    def accept(self, visitor):
-        visitor.visit_text(self)
+    def render_sql(self, renderer):
+        return renderer.render_text(self)
 
 
 class String(SQLType):
 
-    def __init__(self, length, **kwargs):
-        self.length = length
-        super().__init__(kwargs)
+    def __init__(self):
+        super().__init__()
+        self.length = None
 
-    def accept(self, visitor):
-        visitor.visit_string(self)
+    def render_sql(self, renderer):
+        return renderer.render_string(self)

@@ -11,8 +11,8 @@ class OneToOne(BaseColumn):
         super().__init__(None, **option)
         self.foreign_key = foreign_key
 
-    def accept(self, visitor):
-        visitor.visit_one_to_one(self)
+    def render_sql(self, renderer):
+        renderer.render_one_to_one(self)
 
     def __eq__(self, value):
         return equal(self, value)
@@ -65,8 +65,8 @@ class ManyToMany(BaseColumn):
         self.foreign_model = foreign_model
         self.secondary = secondary
 
-    def accept(self, visitor):
-        visitor.visit_many_to_many(self)
+    def render_sql(self, renderer):
+        renderer.render_many_to_many(self)
 
 
     def _resolve_foreign_keys(self):

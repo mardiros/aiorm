@@ -25,7 +25,7 @@ class BaseColumn:
             self.type = args[0]
 
         self.model = None
-        self.options = options
+        self.immutable = options.pop('immutable', False)
 
     def _get_model(self, mode):
         raise NotImplementedError
@@ -69,27 +69,33 @@ class BaseColumn:
                                    self.model.__name__,
                                    self.name)
 
-    def accept(self, visitor):
+    def render_sql(self, renderer):
         raise NotImplementedError
 
 
 class Column(BaseColumn):
 
     def __init__(self, *args, **options):
+        self.nullable = options.pop('nullable', False)
+        self.unique = options.pop('unique', False)
+        self.default_value = options.pop('default', None)
         super().__init__(*args, **options)
+        self.type = self.type()
+        for key, val in options.items():
+            setattr(self.type, key, val)
         self.data = WeakKeyDictionary()
 
     def _get_model(self, model):
-        return self.data.get(model, self.options.get('default'))
+        return self.data.get(model, self.default_value)
 
     def __set__(self, model, value):
 
-        if (self.options.get('immutable') and
+        if (self.immutable and
             self.data.get(model, value) != value
             ):
             raise ImmutableFieldUpdateError(model, self)
 
         self.data[model] = value
 
-    def accept(self, visitor):
-        visitor.visit_column(self)
+    def render_sql(self, renderer):
+        return renderer.render_column(self)

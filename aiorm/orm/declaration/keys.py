@@ -1,17 +1,18 @@
+from weakref import WeakKeyDictionary
+
 from .meta import db
-from .columns import Column
+from .columns import Column, BaseColumn
 
 
 class PrimaryKey(Column):
     """ Declare Primary key """
 
-    def __init__(self, *args, autoincrement=False, **options):
-        options['autoincrement'] = autoincrement
+    def __init__(self, *args, **options):
         options['immutable'] = True
         super().__init__(*args, **options)
 
-    def accept(self, visitor):
-        visitor.visit_primary_key(self)
+    def render_sql(self, renderer):
+        return renderer.render_primary_key(self)
 
     def __get_pkv(model_cls):
         def get_pkv(model):
@@ -33,18 +34,30 @@ class PrimaryKey(Column):
         return self
 
 
-class ForeignKey(Column):
+class ForeignKey(BaseColumn):
     """ Declare a foreign key """
 
     def __init__(self, *args, **options):
+        self.nullable = options.pop('nullable', False)
+        self.unique = options.pop('unique', False)
         super().__init__(*args, **options)
 
         self.foreign_key =  None
+        self.options = options
         if not isinstance(self.type, str):
             self.type, self.foreign_key = self.type.type, self.type
+            self.set_options()
+        self.data = WeakKeyDictionary()
 
-    def accept(self, visitor):
-        visitor.visit_foreign_key(self)
+    def set_options(self):
+        for key, val in self.options.items():
+            setattr(self.type, key, val)
+
+    def render_sql(self, renderer):
+        return renderer.render_foreign_key(self)
+
+    def _get_model(self, model):
+        return self.data.get(model, self.options.get('default'))
 
     def _get_model_cls(self, model_cls):
         super()._get_model_cls(model_cls)
@@ -53,7 +66,8 @@ class ForeignKey(Column):
             meta = self.model.__meta__
             table, field = self.type.split('.', 1)
             self.foreign_key = getattr(db[meta['database']][table], field)
-            self.type = self.foreign_key.type
+            self.type = self.foreign_key.type.__class__()
+            self.set_options()
 
         self.model.__meta__['foreign_keys'][self.name] = self
         return self

@@ -3,7 +3,7 @@ import logging
 
 import venusian
 
-from .declaration import Column
+from .declaration import Column, ForeignKey
 from .declaration.meta import db
 
 
@@ -53,7 +53,8 @@ class table:
 
             # Populate column descriptors
             columns = [attr for attr in dir(wrapped)
-                       if isinstance(getattr(wrapped, attr), Column)]
+                       if isinstance(getattr(wrapped, attr), (Column,
+                                                              ForeignKey))]
             wrapped.__meta__['columns'] = columns
 
             db[self.database][self.name] = wrapped

@@ -4,10 +4,10 @@ import logging
 from aiorm import orm
 from aiorm import registry
 from aiorm.driver.postgresql.aiopg import Driver
-from aiorm.orm.query import Get, Select, Insert, Update, Delete
-from aiorm.orm.dialect.postgresql import Dialect
+from aiorm.orm.query import Get, Select, Insert, Update, Delete, CreateTable
+from aiorm.orm.dialect.postgresql import Dialect, CreateTableDialect
 
-from blog.models import User, UserPreference, Group
+from blog.models import User, UserPreference, Group, UserGroup
 
 
 @asyncio.coroutine

@@ -19,7 +19,6 @@ class Table:
         return '<Table {} #{}>'.format(self.__class__.__name__, self.id)
 
 
-
 @orm.table(database='sample', name='user__group')
 class UserGroup(Table):
     group_id = orm.ForeignKey('group.id')
@@ -28,32 +27,26 @@ class UserGroup(Table):
 
 @orm.table(database='sample', name='group')
 class Group(Table):
-    
+
     id = orm.PrimaryKey(orm.Integer)
     created_at = orm.Column(orm.Timestamp)
-    name = orm.Column(orm.String(255))
+    name = orm.Column(orm.String, length=255)
     users = orm.ManyToMany('user', 'user__group')
 
 
 @orm.table(database='sample', name='user')
 class User(Table):
-    
+
     id = orm.PrimaryKey(orm.Integer, autoincrement=True)
     created_at = orm.Column(orm.Timestamp, default=orm.utc_now())
-    login = orm.Column(orm.String(50))
-    password = orm.Column(orm.String(60))
-    firstname = orm.Column(orm.String(255))
-    lastname = orm.Column(orm.String(255))
-    email = orm.Column(orm.String(255))
-    lang = orm.Column(orm.String(2))
+    login = orm.Column(orm.String, length=50, unique=True)
+    password = orm.Column(orm.String, length=60)
+    firstname = orm.Column(orm.String, length=255, nullable=True)
+    lastname = orm.Column(orm.String, length=255, nullable=True)
+    email = orm.Column(orm.String, length=255, unique=True)
+    lang = orm.Column(orm.String, length=2)
     preferences = orm.OneToMany('user_preference.user_id')
     groups = orm.ManyToMany(Group, UserGroup)
-
-    @classmethod
-    @asyncio.coroutine
-    def by_id(cls, id):
-        return (yield from orm.Query(cls).filter(cls.id == id).get_one())
-
 
 
 @orm.table(database='sample', name='preference')
@@ -61,8 +54,8 @@ class Preference(Table):
 
     id = orm.PrimaryKey(orm.Integer, autoincrement=True)
     created_at = orm.Column(orm.Timestamp, default=orm.utc_now())
-    key = orm.Column(orm.String(50))
-    type = orm.Column(orm.String(50))
+    key = orm.Column(orm.String, length=50)
+    type = orm.Column(orm.String, length=50)
     default = orm.Column(orm.Text)
 
 
