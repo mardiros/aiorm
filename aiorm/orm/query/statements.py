@@ -1,8 +1,8 @@
-""" Abstract sql statements """
+""" Abstract sql statements to query schema """
 import asyncio
 import logging
 
-from  zope.interface import implementer, Interface
+from  zope.interface import implementer
 
 from aiorm import registry
 from . import interfaces
@@ -11,8 +11,7 @@ from . import interfaces
 log = logging.getLogger(__name__)
 
 
-@implementer(interfaces.IQuery)
-class Query:
+class _Query:
 
     def __init__(self, *args, **kwargs):
         self._args = args
@@ -20,6 +19,11 @@ class Query:
         self._child = None
 
     def __getattr__(self, key):
+        """
+        Use zope.interface for easy extensability.
+        If you want to had your own statement, register your own interface,
+        with your own implementation in aiorm registry.
+        """
         iface = 'I' + ''.join(txt.capitalize() for txt in key.split('_'))
         iface = getattr(interfaces, iface)
         self._child = registry.get(iface)(self)
@@ -37,7 +41,19 @@ class Query:
                     )
 
 
-class _SingleResultQuery(Query):
+class _NoResultQuery(_Query):
+
+    @asyncio.coroutine
+    def run(self):
+        driver = registry.get_driver(self._args[0].__meta__['database'])
+        with (yield from driver.pool.cursor()) as cur:
+            sql_statement = self.render_sql()
+            log.debug('{!r} % {!r}'.format(*sql_statement))
+            yield from cur.execute(*sql_statement)
+            return True
+
+
+class _SingleResultQuery(_Query):
 
     @asyncio.coroutine
     def run(self):
@@ -48,7 +64,7 @@ class _SingleResultQuery(Query):
         return model
 
 
-class _ManyResultQuery(Query):
+class _ManyResultQuery(_Query):
 
     @asyncio.coroutine
     def run(self, many=True):
@@ -70,7 +86,6 @@ class _ManyResultQuery(Query):
         return iter_models(rows) if many else to_model(rows)
 
 
-@implementer(interfaces.IGet)
 class Get(_SingleResultQuery):
 
     def render_sql(self):
@@ -81,7 +96,6 @@ class Get(_SingleResultQuery):
         return renderer.query, renderer.parameters
 
 
-@implementer(interfaces.ISelect)
 class Select(_ManyResultQuery):
 
     def render_sql(self):
@@ -92,8 +106,7 @@ class Select(_ManyResultQuery):
         return renderer.query, renderer.parameters
 
 
-@implementer(interfaces.IInsert)
-class Insert(Query):
+class Insert(_Query):
 
     def render_sql(self):
         renderer = registry.get(interfaces.IDialect)()
@@ -109,7 +122,6 @@ class Insert(Query):
         return model
 
 
-@implementer(interfaces.IUpdate)
 class Update(Insert):
 
     def render_sql(self):
@@ -118,25 +130,14 @@ class Update(Insert):
         return renderer.query, renderer.parameters
 
 
-@implementer(interfaces.IDelete)
-class Delete(Query):
+class Delete(_NoResultQuery):
 
     def render_sql(self):
         renderer = registry.get(interfaces.IDialect)()
         renderer.render_delete(*self._args, **self._kwargs)
         return renderer.query, renderer.parameters
 
-    @asyncio.coroutine
-    def run(self):
-        driver = registry.get_driver(self._args[0].__meta__['database'])
-        with (yield from driver.pool.cursor()) as cur:
-            sql_statement = self.render_sql()
-            log.debug('{} % {:!r}'.format(*sql_statement))
-            yield from cur.execute(*sql_statement)
-            return True
 
-
-@implementer(interfaces.IStatement)
 class Statement:
 
     def __init__(self, query):
@@ -146,6 +147,11 @@ class Statement:
         self._child = None
 
     def __getattr__(self, key):
+        """
+        Use zope.interface for easy extensability.
+        If you want to had your own statement, register your own interface,
+        with your own implementation in aiorm registry.
+        """
         iface = getattr(interfaces, 'I' + key.capitalize())
         self._child = registry.get(iface)(self._query)
         return self._child
@@ -190,15 +196,6 @@ class Where(Statement):
             self._child.render_sql(renderer)
         return renderer.query, renderer.parameters
 
-
-registry.register(Query)
-registry.register(Statement)
-
-registry.register(Get, interfaces.IGet)
-registry.register(Select, interfaces.ISelect)
-registry.register(Insert, interfaces.IInsert)
-registry.register(Update, interfaces.IUpdate)
-registry.register(Delete, interfaces.IDelete)
 
 registry.register(Where, interfaces.IWhere)
 registry.register(Join, interfaces.IJoin)
