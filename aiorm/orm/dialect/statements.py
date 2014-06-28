@@ -1,10 +1,14 @@
 """ Abstract sql statements """
 import asyncio
+import logging
 
 from  zope.interface import implementer, Interface
 
 from aiorm import registry
 from . import interfaces
+
+
+log = logging.getLogger(__name__)
 
 
 @implementer(interfaces.IQuery)
@@ -23,10 +27,10 @@ class Query:
 
     @asyncio.coroutine
     def run(self, many=True):
-        driver = registry.get_driver()
+        driver = registry.get_driver(self._args[0].__meta__['database'])
         with (yield from driver.pool.cursor()) as cur:
             sql_statement = self.render_sql()
-            print (sql_statement[0], '%', sql_statement[1])
+            log.debug('{} % {!r}'.format(*sql_statement))
             yield from cur.execute(*sql_statement)
             return ((yield from cur.fetchall())
                     if many else (yield from cur.fetchone())
@@ -124,10 +128,10 @@ class Delete(Query):
 
     @asyncio.coroutine
     def run(self):
-        driver = registry.get_driver()
+        driver = registry.get_driver(self._args[0].__meta__['database'])
         with (yield from driver.pool.cursor()) as cur:
             sql_statement = self.render_sql()
-            print (sql_statement[0], '%', sql_statement[1])
+            log.debug('{} % {:!r}'.format(*sql_statement))
             yield from cur.execute(*sql_statement)
             return True
 

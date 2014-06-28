@@ -4,7 +4,7 @@ Component registry
 based on zope.interfaces
 
 """
-# XXX a copy/paste from apium
+import asyncio
 
 from zope.interface import interface, declarations, implementedBy
 from zope.interface.adapter import AdapterRegistry
@@ -53,16 +53,26 @@ def get(adapted_iface, original_iface=IDriver):
 _instances = {}
 
 
-def get_component(adapted_iface, original_iface=IDriver):
-    """ Return a singleton object for the given interface """
+@asyncio.coroutine
+def connect(url, name=None):
+    """
+    If name is provided, it's override the database in the url for
+    the database in the code. e.g. you can have a database name which
+    does not match the database name in your aiorm decorated class.
+    """
+    # XXX actually aiorm support only postgresql so this works,
+    # but if we have to manage many connection on different
+    # engine we are screwed, a lots of refactor have to be planned
+    driver = get(IDriver)()
+    yield from driver.connect(url)
+    if name is None:
+        name = url.rsplit('/', 2).pop()
+    _instances[name] = driver
 
-    if (adapted_iface, original_iface) not in _instances:
-        _instances[(adapted_iface, original_iface)] = get(adapted_iface,
-                                                          original_iface)()
 
-    return _instances[(adapted_iface, original_iface)]
-
-
-def get_driver():
+def get_driver(name):
     """ Return the Driver Singleton """
-    return get_component(IDriver)
+    try:
+        return _instances[name]
+    except KeyError:
+        raise RuntimeError('Database {} is not registred')

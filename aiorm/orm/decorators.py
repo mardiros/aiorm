@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 db = defaultdict(dict)
 
+
 class table:
     """
     Decorator to register a table in a database.
