@@ -168,3 +168,95 @@ class Dialect:
     # XXX those methods return somethink instead of righting in the query
     def render_utcnow(self, utcnow):
         return "(NOW() at time zone 'utc')"
+
+
+@implementer(interfaces.ICreateTableDialect)
+class CreateTableDialect:
+
+    def __init__(self):
+        self.query = None
+        self.primary_key_cols = {}
+        self.foreign_keys_cols = {}
+        self.columns = {}
+        self.constraint = []
+
+    def render_create_table(self, model_class):
+        meta = model_class.__meta__
+        columns = set(meta['columns'])
+
+        [getattr(model_class, col).render_sql(self) for col in meta['columns']]
+        columns_declaration = []
+        pkeys = sorted(self.primary_key_cols.keys())
+        for key in pkeys:
+            columns_declaration.append(self.primary_key_cols[key])
+        for key in sorted(self.foreign_keys_cols.keys()):
+            columns_declaration.append(self.foreign_keys_cols[key])
+        for key in sorted(self.columns.keys()):
+            columns_declaration.append(self.columns[key])
+
+        if pkeys:
+            columns_declaration.append('CONSTRAINT "{}_pkey" PRIMARY KEY ("{}")'
+                                       ''.format(meta['tablename'],
+                                                 '", "'.join(pkeys)
+                                                 ))
+        columns_declaration.extend(self.constraint)
+        self.query = ('CREATE TABLE "{}" (\n'
+                      '\t{}\n'
+                      ')\n').format(meta['tablename'],
+                                    ',\n\t'.join(columns_declaration,)
+                                    )
+        print(self.query)
+        self.query = 'SELECT 1'
+
+    def _render_column(self, field):
+        return '"{}" {}{}'.format(field.name,
+                                  field.type.render_sql(self),
+                                  '' if field.nullable else ' NOT NULL',
+                                  )
+
+    def _render_unique_constraint(self, field):
+        return ('CONSTRAINT "{}_{col}" UNIQUE ("{col}")'
+                '').format(field.model.__meta__['tablename'],
+                           col=field.name)
+
+    def _render_foreign_key(self, field):
+        return ('CONSTRAINT "{}_{}_fkey" FOREIGN KEY ("{}")\n\t\t'
+                'REFERENCES "{}" ("{}") MATCH SIMPLE '
+                'ON UPDATE NO ACTION ON DELETE NO ACTION'
+                '').format(field.model.__meta__['tablename'],
+                           field.name,
+                           field.name,
+                           field.foreign_key.model.__meta__['tablename'],
+                           field.foreign_key.name
+                           )
+
+    def render_primary_key(self, field):
+        self.primary_key_cols[field.name] = self._render_column(field)
+
+    def render_foreign_key(self, field):
+        self.foreign_keys_cols[field.name] = self._render_column(field)
+        self.constraint.append(self._render_foreign_key(field))
+        if field.unique:
+            self.constraint.append(self._render_unique_constraint(field))
+
+    def render_column(self, field):
+        self.columns[field.name] = self._render_column(field)
+        if field.unique:
+            self.constraint.append(self._render_unique_constraint(field))
+
+    def render_integer(self, field):
+        ret = 'serial' if field.autoincrement else 'int'
+        return ret
+
+    def render_timestamp(self, field):
+        ret = 'timestamp'
+        if not field.with_timezone:
+            ret += ' without time zone'
+        return ret
+
+    def render_string(self, field):
+        ret = 'character varying({})'.format(field.length)
+        return ret
+
+    def render_text(self, field):
+        return 'text'

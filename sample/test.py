@@ -15,10 +15,17 @@ def routine(future):
 
     registry.register(Driver)
     registry.register(Dialect)
+    registry.register(CreateTableDialect)
     yield from registry.connect('postgresql://pg:sample@192.168.122.246:5432/sample',
                                 name='sample')
     driver = registry.get_driver('sample')
     driver.scan('blog.models')
+    '''
+    yield from CreateTable(User).run()
+    yield from CreateTable(Group).run()
+    yield from CreateTable(UserGroup).run()
+    yield from CreateTable(UserPreference).run()
+    '''
     user = yield from Get(User, 1).run()
     print (user.login)
     """

@@ -4,6 +4,8 @@ class IDialect(Interface):
     """ render a sql query """
 
 
+class ICreateTableDialect(Interface):
+    """ render a sql query for sql schema generation """
 
 
 class IStatement(Interface):
