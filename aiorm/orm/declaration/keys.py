@@ -1,4 +1,4 @@
-from .decorators import db
+from .meta import db
 from .columns import Column
 
 

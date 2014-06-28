@@ -1,15 +1,13 @@
 import re
 import logging
-from collections import defaultdict
 
 import venusian
 
-from .columns import Column
+from .declaration import Column
+from .declaration.meta import db
 
 
 log = logging.getLogger(__name__)
-
-db = defaultdict(dict)
 
 
 class table:

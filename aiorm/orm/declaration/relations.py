@@ -1,8 +1,8 @@
 import asyncio
 
-from .decorators import db
-from .query import Select
+from .meta import db
 from .columns import BaseColumn
+from ..query import Select
 
 
 class OneToOne(BaseColumn):
