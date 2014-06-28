@@ -3,10 +3,10 @@ import logging
 
 from aiorm import orm
 from aiorm import registry
-from aiorm.orm.dialect.postgresql import Dialect
-from aiorm.orm.dialect import Get, Select, Insert, Update, Delete
 from aiorm.driver.postgresql.aiopg import Driver
+from aiorm.orm.query import Get, Select, Insert, Update, Delete
 from aiorm.orm.dialect.postgresql import Dialect
+
 from blog.models import User, UserPreference, Group
 
 

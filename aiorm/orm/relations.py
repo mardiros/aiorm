@@ -1,7 +1,7 @@
 import asyncio
 
 from .decorators import db
-from .dialect import Select
+from .query import Select
 from .columns import BaseColumn
 
 

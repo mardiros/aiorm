@@ -1,6 +1,6 @@
 from weakref import WeakKeyDictionary
 
-from .dialect import operators
+from .query import operators
 
 
 

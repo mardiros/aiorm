@@ -6,7 +6,7 @@ SQL Dialect of postrgresql engine
 from  zope.interface import implementer, Interface
 
 from aiorm import registry
-from . import interfaces
+from ..query import interfaces
 
 
 @implementer(interfaces.IDialect)
