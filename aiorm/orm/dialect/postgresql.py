@@ -200,13 +200,11 @@ class CreateTableDialect:
                                                  '", "'.join(pkeys)
                                                  ))
         columns_declaration.extend(self.constraint)
-        self.query = ('CREATE TABLE "{}" (\n'
+        self.query = ('CREATE TABLE IF NOT EXISTS"{}" (\n'
                       '\t{}\n'
                       ')\n').format(meta['tablename'],
                                     ',\n\t'.join(columns_declaration,)
                                     )
-        print(self.query)
-        self.query = 'SELECT 1'
 
     def _render_column(self, field):
         return '"{}" {}{}'.format(field.name,

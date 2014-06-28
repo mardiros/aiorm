@@ -4,7 +4,7 @@ import logging
 from aiorm import orm
 from aiorm import registry
 from aiorm.driver.postgresql.aiopg import Driver
-from aiorm.orm.query import Get, Select, Insert, Update, Delete, CreateTable
+from aiorm.orm.query import Get, Select, Insert, Update, Delete, CreateTable, CreateSchema
 from aiorm.orm.dialect.postgresql import Dialect, CreateTableDialect
 
 from blog.models import User, UserPreference, Group, UserGroup
@@ -20,11 +20,8 @@ def routine(future):
                                 name='sample')
     driver = registry.get_driver('sample')
     driver.scan('blog.models')
-    '''
-    yield from CreateTable(User).run()
-    yield from CreateTable(Group).run()
-    yield from CreateTable(UserGroup).run()
-    yield from CreateTable(UserPreference).run()
+    yield from CreateSchema('sample').run()
+
     '''
     user = yield from Get(User, 1).run()
     print (user.login)
@@ -47,6 +44,7 @@ def routine(future):
     for user in users:
         print (user.login)
 
+    '''
     '''
     user = User(login='mylogin', password='should be encrypted',
                 email='my@email.tld',
