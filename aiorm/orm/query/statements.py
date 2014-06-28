@@ -30,14 +30,14 @@ class _Query:
         return self._child
 
     @asyncio.coroutine
-    def run(self, many=True):
+    def run(self, fetchall=True):
         driver = registry.get_driver(self._args[0].__meta__['database'])
         with (yield from driver.pool.cursor()) as cur:
             sql_statement = self.render_sql()
             log.debug('{} % {!r}'.format(*sql_statement))
             yield from cur.execute(*sql_statement)
             return ((yield from cur.fetchall())
-                    if many else (yield from cur.fetchone())
+                    if fetchall else (yield from cur.fetchone())
                     )
 
 
@@ -57,7 +57,7 @@ class _SingleResultQuery(_Query):
 
     @asyncio.coroutine
     def run(self):
-        row = yield from super().run(many=False)
+        row = yield from super().run(fetchall=False)
         model = self._args[0]()
         for idx, col in enumerate(model.__meta__['columns']):
             setattr(model, col, row[idx])
@@ -67,7 +67,7 @@ class _SingleResultQuery(_Query):
 class _ManyResultQuery(_Query):
 
     @asyncio.coroutine
-    def run(self, many=True):
+    def run(self):
 
         def to_model(row):
             model = self._args[0]()
@@ -80,10 +80,9 @@ class _ManyResultQuery(_Query):
             for row in rows:
                 yield to_model(row)
 
-        if (len(self._args) > 1):
-            self._many = self._args[1]            
-        rows = yield from super().run(many=many)
-        return iter_models(rows) if many else to_model(rows)
+        fetchall = self._args[1] if (len(self._args) > 1) else True
+        rows = yield from super().run(fetchall=fetchall)
+        return iter_models(rows) if fetchall else to_model(rows)
 
 
 class Get(_SingleResultQuery):
@@ -115,7 +114,7 @@ class Insert(_Query):
 
     @asyncio.coroutine
     def run(self):
-        row = yield from super().run(many=False)
+        row = yield from super().run(fetchall=False)
         model = self._args[0]
         for idx, col in enumerate(model.__meta__['columns']):
             setattr(model, col, row[idx])
