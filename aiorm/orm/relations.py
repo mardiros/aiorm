@@ -18,8 +18,8 @@ class OneToOne(BaseColumn):
         return equal(self, value)
 
     def _resolve_foreign_keys(self):
-        meta = self.model.__meta__
         if isinstance(self.foreign_key, str):
+            meta = self.model.__meta__
             table, field = self.foreign_key.split('.', 1)
             self.foreign_key = getattr(db[meta['database']][table], field)
         
@@ -53,6 +53,12 @@ class OneToMany(OneToOne):
 
 
 class ManyToMany(BaseColumn):
+    """
+    Describe a relation using 3 tables.
+     * the table where the ManyToMany relation is described
+     * the foreing model wich will be iterable in the model instance
+     * the secondary containing foreign keys between the two other tables
+    """
 
     def __init__(self, foreign_model, secondary):
         super().__init__(None)
@@ -62,8 +68,17 @@ class ManyToMany(BaseColumn):
     def accept(self, visitor):
         visitor.visit_many_to_many(self)
 
+
+    def _resolve_foreign_keys(self):
+        meta = self.model.__meta__
+        if isinstance(self.foreign_model, str):
+            self.foreign_model = db[meta['database']][self.foreign_model]
+        if isinstance(self.secondary, str):
+            self.secondary = db[meta['database']][self.secondary]
+
     @asyncio.coroutine
     def _get_model(self, model):
+        self._resolve_foreign_keys()
         condition = [(getattr(self.secondary, name) ==
                       getattr(model, foreign_model.foreign_key.name)
                       )
@@ -80,4 +95,3 @@ class ManyToMany(BaseColumn):
 
     def __eq__(self, value):
         return equal(self, value)
-
