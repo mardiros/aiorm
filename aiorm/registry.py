@@ -36,21 +36,25 @@ def register(registred_type, *adapted_ifaces, adapt=IDriver):
         _iface_registry.register([adapt], iface, '', registred_type)
 
 
-def get(adapted_iface, original_iface=IDriver):
+def unregister(iface, adapt=IDriver):
+    _iface_registry.register([adapt], iface, '', None)
+
+
+def get(adapted_iface, adapt=IDriver):
     """ Return registered adapter for a given class and interface. """
 
-    if not isinstance(original_iface, interface.InterfaceClass):
-        if hasattr(original_iface, '__class__'):
-            original_iface = original_iface.__class__
-        original_iface = declarations.implementedBy(original_iface)
+    if not isinstance(adapt, interface.InterfaceClass):
+        if hasattr(adapt, '__class__'):
+            adapt = adapt.__class__
+        adapt = declarations.implementedBy(adapt)
 
-    registred_type = _iface_registry.lookup1(original_iface, adapted_iface, '')
+    registred_type = _iface_registry.lookup1(adapt, adapted_iface, '')
     if not registred_type:
         raise NotImplementedError('No implementation has been registered')
     return registred_type
 
 
-_instances = {}
+_drivers = {}
 
 
 @asyncio.coroutine
@@ -66,13 +70,14 @@ def connect(url, name=None):
     driver = get(IDriver)()
     yield from driver.connect(url)
     if name is None:
-        name = url.rsplit('/', 2).pop()
-    _instances[name] = driver
+        name = driver.database
+    _drivers[name] = driver
+    return driver
 
 
 def get_driver(name):
     """ Return the Driver Singleton """
     try:
-        return _instances[name]
+        return _drivers[name]
     except KeyError:
         raise RuntimeError('Database {} is not registred')
