@@ -49,6 +49,20 @@ class ColumnTestCase(TestCase):
         self.assertEqual(Test.field._get_model(test), 'val')
         self.assertEqual(test.field, 'val')
 
+    def test_equal(self):
+        from aiorm import orm
+        from aiorm.orm.query import operators
+
+        class Test:
+            field = orm.Column(mock.Mock)
+
+        self.assertIsInstance(Test.field == 1, operators.equal)
+        self.assertIsInstance(Test.field > 1, operators.greater_than)
+        self.assertIsInstance(Test.field >= 1, operators.greater_than_or_equal)
+        self.assertIsInstance(Test.field < 1, operators.less_than)
+        self.assertIsInstance(Test.field <= 1, operators.less_than_or_equal)
+
+
     def test_render_sql(self):
         from aiorm import orm
 

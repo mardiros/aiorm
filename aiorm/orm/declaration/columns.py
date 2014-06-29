@@ -55,14 +55,14 @@ class BaseColumn:
     def __gt__(self, value):
         return operators.greater_than(self, value)
 
-    def __gte__(self, value):
-        return operators.greater_or_equal_than(self, value)
+    def __ge__(self, value):
+        return operators.greater_than_or_equal(self, value)
 
     def __lt__(self, value):
         return operators.less_than(self, value)
 
-    def __lte__(self, value):
-        return operators.less_or_equal_than(self, value)
+    def __le__(self, value):
+        return operators.less_than_or_equal(self, value)
 
     def __repr__(self):
         return '<{} {}.{}>'.format(self.__class__.__name__,
@@ -158,6 +158,9 @@ class ForeignKey(BaseColumn):
 
     def _get_model_cls(self, model_cls):
         super()._get_model_cls(model_cls)
+        if not hasattr(self.model, '__meta__'):
+            # XXX not available until venusian passed
+            return self
 
         if not self.foreign_key:
             meta = self.model.__meta__

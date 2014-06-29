@@ -23,7 +23,7 @@ class equal:
         self.value = value
 
     def render_sql(self, renderer):
-        return renderer.render_equal(self)    
+        return renderer.render_equal(self)
 
 
 class greater_than:
@@ -35,7 +35,7 @@ class greater_than:
         return renderer.render_greater_than(self)
 
 
-class greater_or_equal_than:
+class greater_than_or_equal:
     def __init__(self, column, value):
         self.column = column
         self.value = value
@@ -53,7 +53,7 @@ class less_than:
         return renderer.render_less_than(self)
 
 
-class less_or_equal:
+class less_than_or_equal:
     def __init__(self, column, value):
         self.column = column
         self.value = value
