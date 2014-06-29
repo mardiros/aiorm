@@ -2,7 +2,7 @@ from unittest import mock
 from aiorm.tests.testing import TestCase
 
 
-class ColumnTestScase(TestCase):
+class ColumnTestCase(TestCase):
 
     def test_column_all_args(self):
         from aiorm import orm
@@ -70,3 +70,17 @@ class ColumnTestScase(TestCase):
         test.field = 1
         with self.assertRaises(ImmutableFieldUpdateError):
             test.field = 2
+
+
+class PrimaryKeyTestCase(TestCase):
+
+    def test_primary_key_composed(self):
+        from aiorm import orm
+
+        class Test:
+            field1 = orm.PrimaryKey(mock.Mock)
+            field2 = orm.PrimaryKey(mock.Mock)
+            field3 = orm.Column(mock.Mock)
+
+        self.assertTrue(Test.field1.immutable)
+        self.assertTrue(Test.field2.immutable)
