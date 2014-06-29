@@ -17,13 +17,10 @@ class table:
     """
     _counter = 1
 
-    def __init__(self, database, charset='utf-8',
-                 collation='en_US.utf-8', name=None, **extra):
+    def __init__(self, database, collation='en_US.UTF8', name=None):
         self.database = database
-        self.charset = charset
         self.collation = collation
         self.name = name
-        self.extra = extra
 
     def __call__(self, wrapped):
 
@@ -33,9 +30,7 @@ class table:
                     {'tablename': None,
                      'alias': 't{}'.format(self._counter),
                      'database': self.database,
-                     'charset': self.charset,
                      'collation': self.collation,
-                     'extra': self.extra,
                      'columns': None,
                      # Populate on column descriptors
                      'primary_key': {},
