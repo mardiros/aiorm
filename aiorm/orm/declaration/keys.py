@@ -8,8 +8,7 @@ class PrimaryKey(Column):
     """ Declare Primary key """
 
     def __init__(self, *args, **options):
-        options['immutable'] = True
-        super().__init__(*args, **options)
+        super().__init__(*args, immutable=True, **options)
 
     def render_sql(self, renderer):
         return renderer.render_primary_key(self)
@@ -27,7 +26,7 @@ class PrimaryKey(Column):
         if not hasattr(self.model, '__meta__'):
             # XXX not available until venusian passed
             return self
-        
+
         if self not in self.model.__meta__['primary_key'].values():
             self.model.__meta__['primary_key'][self.name] = self
             self.model.__meta__['pkv'] = PrimaryKey.__get_pkv(model_cls)

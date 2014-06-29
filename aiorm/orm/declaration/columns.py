@@ -17,7 +17,7 @@ class BaseColumn:
     Python descriptor class used to represent every column or relation.
     """
 
-    def __init__(self, *args, **options):
+    def __init__(self, *args, immutable=False, **options):
         try:
             self.name, self.type = args
         except ValueError:
@@ -25,7 +25,7 @@ class BaseColumn:
             self.type = args[0]
 
         self.model = None
-        self.immutable = options.pop('immutable', False)
+        self.immutable = immutable
 
     def _get_model(self, mode):
         raise NotImplementedError
@@ -79,7 +79,8 @@ class Column(BaseColumn):
         self.nullable = options.pop('nullable', False)
         self.unique = options.pop('unique', False)
         self.default_value = options.pop('default', None)
-        super().__init__(*args, **options)
+        immutable = options.pop('immutable', False)  # must pop to not setattr
+        super().__init__(*args, immutable=immutable, **options)
         self.type = self.type()
         for key, val in options.items():
             setattr(self.type, key, val)
