@@ -33,7 +33,7 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      # test_suite=NAME,
+      test_suite='{}.tests'.format(NAME),
       install_requires=requires,
       entry_points="""\
       [console_scripts]

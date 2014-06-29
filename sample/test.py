@@ -19,10 +19,10 @@ def routine(future):
     yield from registry.connect('postgresql://pg:sample@192.168.122.246:5432/sample',
                                 name='sample')
     driver = registry.get_driver('sample')
-    driver.scan('blog.models')
+    orm.scan('blog.models')
+
     yield from CreateSchema('sample').run()
 
-    '''
     user = yield from Get(User, 1).run()
     print (user.login)
     """
@@ -38,20 +38,19 @@ def routine(future):
     groups = yield from user.groups
     for group in groups:
         print (group.name)
-    
+
     group = yield from Get(Group, 1).run()
     users = yield from group.users
     for user in users:
         print (user.login)
 
     '''
-    '''
     user = User(login='mylogin', password='should be encrypted',
                 email='my@email.tld',
                 firstname='john',
                 lastname='do',
                 lang='en')
-    
+
     yield from Insert(user).run()
 
     #user = yield from Get(User, 4).run()

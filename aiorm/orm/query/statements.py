@@ -74,7 +74,6 @@ class _ManyResultQuery(_Query):
             for idx, col in enumerate(model.__meta__['columns']):
                 setattr(model, col, row[idx])
             return model
-            
 
         def iter_models(rows): # XXX Can't mix yield and yield from
             for row in rows:
