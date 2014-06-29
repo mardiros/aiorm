@@ -3,7 +3,6 @@ import importlib
 from urllib.parse import urlparse
 
 from zope.interface import implementer
-import venusian
 import aiopg
 
 from aiorm.interfaces import IDriver
@@ -17,8 +16,6 @@ class Driver:
 
     def __init__(self):
         self.pool = None
-        self.database = None
-        self.tables = {}
 
     # def close(self):
     #    aiopg ???
@@ -38,20 +35,5 @@ class Driver:
             password=url.password or 'secret',
             database=self.database)
 
-    # Move me in a base class
-    def register_table(self, database, table):
-        """
-        """
-        if database != self.database:  # I handle only my database ??
-            return
-        
-        if table.__meta__['tablename'] in self.tables:
-            raise RuntimeError('Table name {} has been registered twice'
-                               ''.format(table.__meta__['tablename']))
-        self.tables[table.__meta__['tablename']] = table
-
-    def scan(self, *modules):
-
-        scanner = venusian.Scanner(driver=self)
-        for mod in modules:
-            scanner.scan(importlib.import_module(mod))
+    def cursor(self):
+        return self.pool.cursor()  # return the coroutine

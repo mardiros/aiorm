@@ -1,5 +1,6 @@
 import re
 import logging
+import importlib
 
 import venusian
 
@@ -57,11 +58,15 @@ class table:
                                                               ForeignKey))]
             wrapped.__meta__['columns'] = columns
 
-            db[self.database][self.name] = wrapped
-
             log.info('Register table {}'.format(self.name))
-            scanner.driver.register_table(self.database, wrapped)
+            db[self.database][self.name] = wrapped
 
         venusian.attach(wrapped, callback, category='aiorm')
         return wrapped
- 
+
+
+def scan(*modules):
+    scanner = venusian.Scanner()
+    for mod in modules:
+        log.info('Scanning {}'.format(mod))
+        scanner.scan(importlib.import_module(mod))

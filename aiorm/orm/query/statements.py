@@ -32,7 +32,7 @@ class _Query:
     @asyncio.coroutine
     def run(self, fetchall=True):
         driver = registry.get_driver(self._args[0].__meta__['database'])
-        with (yield from driver.pool.cursor()) as cur:
+        with (yield from driver.cursor()) as cur:
             sql_statement = self.render_sql()
             log.debug('{} % {!r}'.format(*sql_statement))
             yield from cur.execute(*sql_statement)
@@ -46,7 +46,7 @@ class _NoResultQuery(_Query):
     @asyncio.coroutine
     def run(self):
         driver = registry.get_driver(self._args[0].__meta__['database'])
-        with (yield from driver.pool.cursor()) as cur:
+        with (yield from driver.cursor()) as cur:
             sql_statement = self.render_sql()
             log.debug('{!r} % {!r}'.format(*sql_statement))
             yield from cur.execute(*sql_statement)
