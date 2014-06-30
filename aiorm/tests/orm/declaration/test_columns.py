@@ -1,5 +1,6 @@
 from unittest import mock
 from aiorm.tests.testing import TestCase
+from aiorm.tests.fixtures import sample
 
 
 class ColumnTestCase(TestCase):
@@ -98,3 +99,29 @@ class PrimaryKeyTestCase(TestCase):
 
         self.assertTrue(Test.field1.immutable)
         self.assertTrue(Test.field2.immutable)
+
+    def test_render_sql(self):
+        from aiorm import orm
+
+        class Test:
+            field = orm.PrimaryKey(mock.Mock)
+
+        visitor = mock.Mock()
+        Test.field.render_sql(visitor)
+        visitor.render_primary_key.assert_called_with(Test.field)
+
+
+class ForeignKeyTestCase(TestCase):
+
+    def test_render_sql(self):
+        from aiorm import orm
+
+        class Test:
+            field1 = orm.PrimaryKey(mock.Mock)
+
+        class Test2:
+            field2 = orm.ForeignKey(Test.field1)
+
+        visitor = mock.Mock()
+        Test2.field2.render_sql(visitor)
+        visitor.render_foreign_key.assert_called_with(Test2.field2)
