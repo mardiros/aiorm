@@ -12,12 +12,10 @@ class ImmutableFieldUpdateError(Exception):
                                    column.data.get(model)))
 
 
-class BaseColumn:
-    """
-    Python descriptor class used to represent every column or relation.
-    """
+class BaseField:
+    """ The descriptor base class to declare column and relation """
 
-    def __init__(self, *args, immutable=False, **options):
+    def __init__(self, *args):
         try:
             self.name, self.type = args
         except ValueError:
@@ -25,10 +23,10 @@ class BaseColumn:
             self.type = args[0]
 
         self.model = None
-        self.immutable = immutable
 
     def _get_model(self, mode):
-        raise NotImplementedError
+        raise NotImplementedError('{} does not implement _get_model'
+                                  ''.format(self.__class__.__name__))
 
     def _get_model_cls(self, model_cls):
         # class access
@@ -47,7 +45,44 @@ class BaseColumn:
         return self._get_model_cls(cls)
 
     def __set__(self, model, value):
-        raise NotImplementedError
+        raise NotImplementedError('{} does not implement __set__'
+                                  ''.format(self.__class__.__name__))
+
+
+class BaseColumn(BaseField):
+    """
+    Python descriptor class used to represent every column or relation.
+    """
+
+    def __init__(self, *args, nullable=False, unique=False, immutable=False,
+                 primary_key=False):
+        super().__init__(*args)
+        self.nullable = nullable
+        self.unique = unique
+        self.immutable = immutable
+        self.primary_key = primary_key
+
+    def _get_model_cls(self, model_cls):
+        # class access
+        super()._get_model_cls(model_cls)
+
+                                   # XXX not available until venusian passed
+        if not self.primary_key or not hasattr(self.model, '__meta__'):
+            return self
+
+        # Here is for Primary Key Only
+        def get_pkv(model_cls):
+            def get_pkv(model):
+                return {key: getattr(model, key)
+                        for key in model_cls.__meta__['primary_key'].keys()
+                        }
+            return get_pkv
+
+        if self.name not in self.model.__meta__['primary_key']:
+            self.model.__meta__['primary_key'][self.name] = self
+            self.model.__meta__['pkv'] = get_pkv(model_cls)
+
+        return self
 
     def __eq__(self, value):
         return operators.equal(self, value)
@@ -70,17 +105,20 @@ class BaseColumn:
                                    self.name)
 
     def render_sql(self, renderer):
-        raise NotImplementedError
+        raise NotImplementedError('{} does not implement render_sql'
+                                  ''.format(self.__class__.__name__))
 
 
 class Column(BaseColumn):
+    """ Standard way to declare a column """
 
     def __init__(self, *args, **options):
-        self.nullable = options.pop('nullable', False)
-        self.unique = options.pop('unique', False)
         self.default_value = options.pop('default', None)
-        immutable = options.pop('immutable', False)  # must pop to not setattr
-        super().__init__(*args, immutable=immutable, **options)
+        base_column_kw = {}
+        for key in ('nullable', 'immutable', 'unique', 'primary_key'):
+            base_column_kw[key] = options.pop(key, False)
+
+        super().__init__(*args, **base_column_kw)
         self.type = self.type()
         for key, val in options.items():
             setattr(self.type, key, val)
@@ -103,32 +141,13 @@ class Column(BaseColumn):
 
 
 class PrimaryKey(Column):
-    """ Declare Primary key """
+    """ Convenient way to declare Primary key """
 
     def __init__(self, *args, **options):
-        super().__init__(*args, immutable=True, **options)
+        super().__init__(*args, primary_key=True, immutable=True, **options)
 
     def render_sql(self, renderer):
         return renderer.render_primary_key(self)
-
-    def __get_pkv(model_cls):
-        def get_pkv(model):
-            return {key: getattr(model, key)
-                    for key in model_cls.__meta__['primary_key'].keys()
-                    }
-        return get_pkv
-
-    def _get_model_cls(self, model_cls):
-        # class access
-        super()._get_model_cls(model_cls)
-        if not hasattr(self.model, '__meta__'):
-            # XXX not available until venusian passed
-            return self
-
-        if self not in self.model.__meta__['primary_key'].values():
-            self.model.__meta__['primary_key'][self.name] = self
-            self.model.__meta__['pkv'] = PrimaryKey.__get_pkv(model_cls)
-        return self
 
 
 class ForeignKey(BaseColumn):
@@ -171,3 +190,9 @@ class ForeignKey(BaseColumn):
 
         self.model.__meta__['foreign_keys'][self.name] = self
         return self
+
+    def __repr__(self):
+        return '<{} {}{}.{}>'.format(self.__class__.__name__,
+                                   '(PK) ' if self.primary_key else '',
+                                   self.model.__name__,
+                                   self.name)

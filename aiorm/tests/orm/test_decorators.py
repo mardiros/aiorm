@@ -37,14 +37,13 @@ class TableDecoratorTestCase(TestCase):
         @orm.table(database='db0', name='table1', collation='fr_FR.UTF8')
         class Table:
             id = orm.PrimaryKey(orm.Integer)
-            name = orm.PrimaryKey(orm.String)
+            name = orm.Column(orm.String)
 
         self.assertEqual(self.category, 'aiorm')
         self.assertEqual(self.wrapped, Table)
         self.assertEqual(orm.table._counter, oldcounter)
         self.callback(None, None, None)
         self.assertEqual(orm.table._counter, oldcounter + 1)
-        from pprint import pprint
         self.assertEqual(Table, db['db0']['table1'])
         meta = Table.__meta__.copy()
         self.assertTrue(callable(meta.pop('pkv')))

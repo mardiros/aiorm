@@ -1,11 +1,11 @@
 import asyncio
 
 from .meta import db
-from .columns import BaseColumn
+from .columns import BaseField
 from ..query import Select
 
 
-class OneToOne(BaseColumn):
+class OneToOne(BaseField):
 
     def __init__(self, foreign_key, **option):
         super().__init__(None, **option)
@@ -22,7 +22,7 @@ class OneToOne(BaseColumn):
             meta = self.model.__meta__
             table, field = self.foreign_key.split('.', 1)
             self.foreign_key = getattr(db[meta['database']][table], field)
-        
+
     @asyncio.coroutine
     def _get_model(self, model):
         self._resolve_foreign_keys()
@@ -52,7 +52,7 @@ class OneToMany(OneToOne):
         raise TypeError('Cannot set a value for OneToMany, must append/remove')
 
 
-class ManyToMany(BaseColumn):
+class ManyToMany(BaseField):
     """
     Describe a relation using 3 tables.
      * the table where the ManyToMany relation is described

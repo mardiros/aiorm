@@ -125,3 +125,33 @@ class ForeignKeyTestCase(TestCase):
         visitor = mock.Mock()
         Test2.field2.render_sql(visitor)
         visitor.render_foreign_key.assert_called_with(Test2.field2)
+
+
+class SchemaTestCase(TestCase):
+    """ tests that require that __meta__ is set """
+
+    _fixtures = [sample.SampleFixture]
+
+    def test_meta(self):
+        user = sample.User(id=1)
+        meta = sample.User.__meta__
+        self.assertEqual(sorted(meta.keys()),
+                         ['alias', 'collation', 'columns', 'database',
+                          'foreign_keys', 'pkv', 'primary_key', 'tablename'])
+        self.assertEqual(meta['database'], 'sample')
+        self.assertEqual(meta['tablename'], 'user')
+        self.assertEqual(meta['collation'], 'en_US.UTF8')
+        self.assertEqual(sorted(meta['columns']),
+                         ['created_at', 'email', 'firstname', 'id', 'lang',
+                         'lastname', 'login', 'password'])
+        self.assertEqual(meta['primary_key'], {'id': sample.User.id})
+        self.assertEqual(meta['pkv'](user), {'id': 1})
+        self.assertEqual(meta['foreign_keys'], {})
+
+        meta = sample.UserGroup.__meta__
+        self.assertEqual(meta['foreign_keys'],
+                         {'group_id': sample.UserGroup.group_id,
+                          'user_id': sample.UserGroup.user_id})
+        self.assertEqual(meta['primary_key'],
+                         {'group_id': sample.UserGroup.group_id,
+                          'user_id': sample.UserGroup.user_id})

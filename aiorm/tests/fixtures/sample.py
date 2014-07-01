@@ -18,8 +18,8 @@ class Table:
 
 @orm.table(database='sample', name='user_group')
 class UserGroup(Table):
-    group_id = orm.ForeignKey('group.id')
-    user_id = orm.ForeignKey('user.id')
+    group_id = orm.ForeignKey('group.id', primary_key=True)
+    user_id = orm.ForeignKey('user.id', primary_key=True)
 
 
 @orm.table(database='sample', name='group')
