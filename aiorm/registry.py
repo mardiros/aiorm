@@ -82,3 +82,10 @@ def get_driver(name):
         return _drivers[name]
     except KeyError:
         raise RuntimeError('Database {} is not registred')
+
+
+
+@asyncio.coroutine
+def disconnect(name):
+    driver = _drivers.pop(name)
+    yield from driver.disconnect()

@@ -17,9 +17,6 @@ class Driver:
     def __init__(self):
         self.pool = None
 
-    # def close(self):
-    #    aiopg ???
-
     @asyncio.coroutine
     def connect(self, url):
         """ create the driver and connect from the given url """
@@ -34,6 +31,11 @@ class Driver:
             user=url.username or 'postgres',
             password=url.password or 'secret',
             database=self.database)
+
+    @asyncio.coroutine
+    def disconnect(self):
+        # self.pool.close() ???
+        pass
 
     def cursor(self):
         return self.pool.cursor()  # return the coroutine

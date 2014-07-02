@@ -14,3 +14,6 @@ class IDriver(Interface):
 
     def cursor(self):
         """ coroutine that retrieve a cursor to execute sql query """
+
+    def disconnect(self):
+        """ coroutine that disconnect to the database """
