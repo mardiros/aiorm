@@ -5,6 +5,7 @@ based on zope.interfaces
 
 """
 import asyncio
+import inspect
 
 from zope.interface import interface, declarations, implementedBy
 from zope.interface.adapter import AdapterRegistry
@@ -44,7 +45,7 @@ def get(adapted_iface, adapt=IDriver):
     """ Return registered adapter for a given class and interface. """
 
     if not isinstance(adapt, interface.InterfaceClass):
-        if hasattr(adapt, '__class__'):
+        if not inspect.isclass(adapt):
             adapt = adapt.__class__
         adapt = declarations.implementedBy(adapt)
 

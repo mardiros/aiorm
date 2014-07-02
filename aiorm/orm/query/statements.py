@@ -58,6 +58,8 @@ class _SingleResultQuery(_Query):
     @asyncio.coroutine
     def run(self):
         row = yield from super().run(fetchall=False)
+        if row is None:
+            return None
         model = self._args[0]()
         for idx, col in enumerate(model.__meta__['columns']):
             setattr(model, col, row[idx])
@@ -67,9 +69,11 @@ class _SingleResultQuery(_Query):
 class _ManyResultQuery(_Query):
 
     @asyncio.coroutine
-    def run(self):
+    def run(self, fetchall=True):
 
         def to_model(row):
+            if row is None:
+                return None
             model = self._args[0]()
             for idx, col in enumerate(model.__meta__['columns']):
                 setattr(model, col, row[idx])
@@ -79,7 +83,6 @@ class _ManyResultQuery(_Query):
             for row in rows:
                 yield to_model(row)
 
-        fetchall = self._args[1] if (len(self._args) > 1) else True
         rows = yield from super().run(fetchall=fetchall)
         return iter_models(rows) if fetchall else to_model(rows)
 
@@ -114,6 +117,8 @@ class Insert(_Query):
     @asyncio.coroutine
     def run(self):
         row = yield from super().run(fetchall=False)
+        if row is None:
+            return None
         model = self._args[0]
         for idx, col in enumerate(model.__meta__['columns']):
             setattr(model, col, row[idx])

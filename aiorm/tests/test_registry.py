@@ -18,17 +18,41 @@ class TestRegistry(TestCase):
         class IAdapter(Interface):
             pass
 
+        class IAdapter2(Interface):
+            pass
+
+        @implementer(IAdaptable)
+        class Adaptable:
+            pass
+
         @implementer(IAdapter)
         class Adapter:
             pass
 
-        registry.register(Adapter, adapt=IAdaptable)
+        @implementer(IAdapter2)
+        class Adapter2:
+            pass
+
         self.assertRaises(NotImplementedError, registry.get, IAdapter)
+        registry.register(Adapter, adapt=IAdaptable)  # introspect iface
+        self.assertRaises(ValueError,
+                          registry.register, Adapter, adapt=IAdaptable)
+        registry.register(Adaptable, IAdaptable, adapt=IAdaptable) # explicit
+        registry.register(Adapter2, adapt=Adaptable)
+
+        # 3 "types" accepted for the adapt parameter
         self.assertEqual(registry.get(IAdapter, adapt=IAdaptable), Adapter)
-        registry.unregister(IAdapter, IAdaptable)
+        self.assertEqual(registry.get(IAdapter, adapt=Adaptable), Adapter)
+        self.assertEqual(registry.get(IAdapter, adapt=Adaptable()), Adapter)
+
+        self.assertEqual(registry.get(IAdaptable, adapt=IAdaptable), Adaptable)
+        self.assertEqual(registry.get(IAdaptable, adapt=Adaptable), Adaptable)
+
+        registry.unregister(Adapter, IAdaptable)
         self.assertRaises(NotImplementedError,
                           registry.get, IAdapter, adapt=IAdaptable)
-
+        registry.unregister(Adapter)
+        registry.unregister(Adapter2)
 
 class TestDriver(TestCase):
 
@@ -66,3 +90,6 @@ class TestDriver(TestCase):
 
         asyncio.get_event_loop().run_until_complete(aiotest())
 
+    def test_driver_connect_not_registered_db(self):
+        from aiorm import registry
+        self.assertRaises(RuntimeError, registry.get_driver, 'not_reg')
