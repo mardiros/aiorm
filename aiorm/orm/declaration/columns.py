@@ -61,6 +61,7 @@ class BaseColumn(BaseField):
         self.unique = unique
         self.immutable = immutable
         self.primary_key = primary_key
+        self.data = WeakKeyDictionary()
 
     def _get_model_cls(self, model_cls):
         # class access
@@ -83,6 +84,15 @@ class BaseColumn(BaseField):
             self.model.__meta__['pkv'] = get_pkv(model_cls)
 
         return self
+
+    def __set__(self, model, value):
+
+        if (self.immutable and
+            self.data.get(model, value) != value
+            ):
+            raise ImmutableFieldUpdateError(model, self)
+
+        self.data[model] = value
 
     def __eq__(self, value):
         return operators.equal(self, value)
@@ -122,19 +132,9 @@ class Column(BaseColumn):
         self.type = self.type()
         for key, val in options.items():
             setattr(self.type, key, val)
-        self.data = WeakKeyDictionary()
 
     def _get_model(self, model):
         return self.data.get(model, self.default_value)
-
-    def __set__(self, model, value):
-
-        if (self.immutable and
-            self.data.get(model, value) != value
-            ):
-            raise ImmutableFieldUpdateError(model, self)
-
-        self.data[model] = value
 
     def render_sql(self, renderer):
         return renderer.render_column(self)
@@ -163,7 +163,6 @@ class ForeignKey(BaseColumn):
         if not isinstance(self.type, str):
             self.type, self.foreign_key = self.type.type, self.type
             self.set_options()
-        self.data = WeakKeyDictionary()
 
     def set_options(self):
         for key, val in self.options.items():

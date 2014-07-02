@@ -8,7 +8,8 @@ class Table:
         for key, val in kwargs.items():
             if not hasattr(self.__class__, key):
                 raise RuntimeError('Column {} not declared')
-            if not isinstance(getattr(self.__class__, key), orm.Column):
+            if not isinstance(getattr(self.__class__, key), (orm.Column,
+                                                             orm.ForeignKey)):
                 raise RuntimeError('{} is not a column'.format(key))
             setattr(self, key, val)
 
