@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 
@@ -24,8 +25,13 @@ class TestCase(unittest.TestCase):
                                     if hasattr(fixture, 'setUp')]
         [fixture.setUp()
          for fixture in self._fixtures_instances]
+        if hasattr(self, 'aioSetUp'):
+            asyncio.get_event_loop().run_until_complete(self.aioSetUp())
+
 
     def tearDown(self):
+        if hasattr(self, 'aioTearDown'):
+            asyncio.get_event_loop().run_until_complete(self.aioTearDown())
         [fixture.tearDown()
          for fixture in reversed(self._fixtures_instances)]
         self._fixtures_instances = []
