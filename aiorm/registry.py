@@ -30,15 +30,19 @@ def register(registred_type, *adapted_ifaces, adapt=IDriver):
     for iface in adapted_ifaces:
         factory = _iface_registry.registered([adapt], iface)
         if factory is not None:
-            raise ValueError('an adapter (%s) was already registered.' %
-                             (factory, ))
+            raise ValueError('An adapter ({}) was already registered.'
+                             'for iface {}'.format(factory, iface))
 
     for iface in adapted_ifaces:
         _iface_registry.register([adapt], iface, '', registred_type)
 
 
-def unregister(iface, adapt=IDriver):
-    _iface_registry.register([adapt], iface, '', None)
+def unregister(registred_type, adapt=IDriver):
+    adapted_ifaces = implementedBy(registred_type)
+    for iface in adapted_ifaces:
+        factory = _iface_registry.registered([adapt], iface)
+        if factory is registred_type:
+            _iface_registry.register([adapt], iface, '', None)
 
 
 def get(adapted_iface, adapt=IDriver):

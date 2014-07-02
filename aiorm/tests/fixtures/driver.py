@@ -25,4 +25,4 @@ class DriverFixture:
 
     @classmethod
     def tearDownClass(cls):
-        registry.unregister(IDriver)
+        registry.unregister(DummyDriver)
