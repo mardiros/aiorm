@@ -124,6 +124,7 @@ class Column(BaseColumn):
 
     def __init__(self, *args, **options):
         self.default_value = options.pop('default', None)
+        self.autofield = options.get('autoincrement', False)
         base_column_kw = {}
         for key in ('nullable', 'immutable', 'unique', 'primary_key'):
             base_column_kw[key] = options.pop(key, False)

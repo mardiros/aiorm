@@ -26,8 +26,8 @@ class UserGroup(Table):
 @orm.table(database='sample', name='group')
 class Group(Table):
 
-    id = orm.PrimaryKey(orm.Integer)
-    created_at = orm.Column(orm.Timestamp)
+    id = orm.PrimaryKey(orm.Integer, autoincrement=True)
+    created_at = orm.Column(orm.Timestamp, default=orm.utc_now())
     name = orm.Column(orm.String, length=255)
     users = orm.ManyToMany('user', 'user_group')
 

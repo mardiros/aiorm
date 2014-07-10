@@ -28,13 +28,16 @@ class Dialect:
         if primary_key:
             if len(primary_key) > 1 or len(meta['primary_key']) > 1:
                 raise RuntimeError('Cannot use args one multiple primary key')
-            where_clause = '{}."{}" = %s'.format(meta['alias'], list(meta['primary_key'].keys())[0])
+            where_clause = '{}."{}" = %s'.format(meta['alias'],
+                                                 list(meta['primary_key'].keys()
+                                                      )[0])
             self.parameters.append(primary_key[0])
         elif primary_keys:
             try:
                 where_clause = []
-                for pkey in meta['primary_key'].keys():
-                    where_clause.append('{}."{}" = %s'.format(meta['alias'], pkey))
+                for pkey in sorted(meta['primary_key'].keys()):
+                    where_clause.append('{}."{}" = %s'.format(meta['alias'],
+                                                              pkey))
                     self.parameters.append(primary_keys[pkey])
             except KeyError as exc:
                 raise RuntimeError('Missing primary key value %s' % exc)
@@ -63,28 +66,28 @@ class Dialect:
     def render_insert(self, model):
         meta = model.__meta__
         fields = ', '.join(['"{}"'.format(col) for col in meta['columns']
-            if not getattr(model.__class__, col).options.get('autoincrement')])
-        values = ','.join([getattr(model, col).render_sql(self)  # defaults
+            if not getattr(model.__class__, col).autofield])
+        values = ', '.join([getattr(model, col).render_sql(self)  # defaults
             if interfaces.IFunction.providedBy(getattr(model, col))
             else '%s'
             for col in meta['columns']
-            if not getattr(model.__class__, col).options.get('autoincrement')])
+            if not getattr(model.__class__, col).autofield])
         all_fields = ', '.join(['"{}"'.format(col) for col in meta['columns']])
-        
+
         self.query += ('INSERT INTO "{}"({})\n'
                        'VALUES ({})\n'
-                       'RETURNING {}').format(meta['tablename'],
-                                              fields,
-                                              values,
-                                              all_fields)
+                       'RETURNING {}\n').format(meta['tablename'],
+                                                fields,
+                                                values,
+                                                all_fields)
         self.parameters = [getattr(model, col) for col in meta['columns']
-            if not getattr(model.__class__, col).options.get('autoincrement')
+            if not getattr(model.__class__, col).autofield
             and not hasattr(getattr(model, col), 'render_sql')]
 
     def render_update(self, model):
         meta = model.__meta__
         fields = ', '.join(['"{}" = %s'.format(col) for col in meta['columns']
-            if not getattr(model.__class__, col).options.get('immutable')])
+            if not getattr(model.__class__, col).immutable])
         all_fields = ', '.join(['"{}"'.format(col) for col in meta['columns']])
         keys = list(model.__class__.__meta__['pkv'](model).items())
 
@@ -93,10 +96,10 @@ class Dialect:
         self.query += ('UPDATE "{}"\n'
                        'SET {}\n'
                        'WHERE {}\n'
-                       'RETURNING {}').format(meta['tablename'], fields,
-                                              where, all_fields)
+                       'RETURNING {}\n').format(meta['tablename'], fields,
+                                                where, all_fields)
         self.parameters = [getattr(model, col) for col in meta['columns']
-            if not getattr(model.__class__, col).options.get('immutable')]
+            if not getattr(model.__class__, col).immutable]
         self.parameters += [key[1] for key in keys]
 
     def render_delete(self, model):
@@ -135,13 +138,14 @@ class Dialect:
 
     def render_left_join(self, foreign_model_class, condition=None):
         self._render_join(foreign_model_class, condition, 'LEFT')
-        
+
     def render_where(self, statement, *statements, **unused):
         self.query += 'WHERE '
         statement.render_sql(self)
         for statement in statements:
             self.query += '\n  AND '
             statement.render_sql(self)
+        self.query += '\n'
 
     def __render_cmp(self, field, operator):
         self.query += '{}."{}" {} %s'.format(
@@ -156,13 +160,13 @@ class Dialect:
     def render_greater_than(self, field):
         self.__render_cmp(field, '>')
 
-    def render_greater_or_equal_than(self, field):
+    def render_greater_than_or_equal(self, field):
         self.__render_cmp(field, '>=')
 
     def render_less_than(self, field):
         self.__render_cmp(field, '<')
 
-    def render_less_or_equal_than(self, field):
+    def render_less_than_or_equal(self, field):
         self.__render_cmp(field, '<=')
 
     # XXX those methods return somethink instead of righting in the query
