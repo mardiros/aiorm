@@ -205,9 +205,9 @@ class CreateTableDialect:
                                                  ))
         columns_declaration.extend(self.constraint)
         self.query = ('CREATE TABLE IF NOT EXISTS"{}" (\n'
-                      '\t{}\n'
+                      '  {}\n'
                       ')\n').format(meta['tablename'],
-                                    ',\n\t'.join(columns_declaration,)
+                                    ',\n  '.join(columns_declaration,)
                                     )
 
     def _render_column(self, field):
@@ -222,7 +222,7 @@ class CreateTableDialect:
                            col=field.name)
 
     def _render_foreign_key(self, field):
-        return ('CONSTRAINT "{}_{}_fkey" FOREIGN KEY ("{}")\n\t\t'
+        return ('CONSTRAINT "{}_{}_fkey" FOREIGN KEY ("{}")\n    '
                 'REFERENCES "{}" ("{}") MATCH SIMPLE '
                 'ON UPDATE NO ACTION ON DELETE NO ACTION'
                 '').format(field.model.__meta__['tablename'],
@@ -242,7 +242,10 @@ class CreateTableDialect:
             self.constraint.append(self._render_unique_constraint(field))
 
     def render_column(self, field):
-        self.columns[field.name] = self._render_column(field)
+        if field.primary_key:
+            self.primary_key_cols[field.name] = self._render_column(field)
+        else:
+            self.columns[field.name] = self._render_column(field)
         if field.unique:
             self.constraint.append(self._render_unique_constraint(field))
 
