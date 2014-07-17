@@ -17,6 +17,10 @@ class Table:
         return '<Table {} #{}>'.format(self.__class__.__name__, self.id)
 
 
+    def to_dict(self):
+        return {col: getattr(self, col) for col in self.__meta__['columns']}
+
+
 @orm.table(database='sample', name='user_group')
 class UserGroup(Table):
     group_id = orm.ForeignKey('group.id', primary_key=True)

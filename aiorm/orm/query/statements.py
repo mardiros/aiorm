@@ -155,7 +155,8 @@ class Statement:
         If you want to had your own statement, register your own interface,
         with your own implementation in aiorm registry.
         """
-        iface = getattr(interfaces, 'I' + key.capitalize())
+        iface = ['I'] + [word.capitalize() for word in  key.split('_')]
+        iface = getattr(interfaces, ''.join(iface))
         self._child = registry.get(iface)(self._query)
         return self._child
 
