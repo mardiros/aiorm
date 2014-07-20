@@ -124,7 +124,7 @@ class ForeignKeyTestCase(TestCase):
 
         visitor = mock.Mock()
         Test2.field2.render_sql(visitor)
-        visitor.render_foreign_key.assert_called_with(Test2.field2)
+        visitor.render_foreign_key.assert_called_once_with(Test2.field2)
 
 
 class SchemaTestCase(TestCase):

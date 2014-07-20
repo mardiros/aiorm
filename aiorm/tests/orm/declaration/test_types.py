@@ -19,7 +19,7 @@ class TypesTestCase(TestCase):
         self.assertIsNone(int.default)
         visitor = mock.Mock()
         int.render_sql(visitor)
-        visitor.render_integer.assert_called_with(int)
+        visitor.render_integer.assert_called_once_with(int)
 
     def test_timestamp(self):
         from aiorm.orm.declaration import types
@@ -28,7 +28,7 @@ class TypesTestCase(TestCase):
         self.assertIsNone(timestamp.default)
         visitor = mock.Mock()
         timestamp.render_sql(visitor)
-        visitor.render_timestamp.assert_called_with(timestamp)
+        visitor.render_timestamp.assert_called_once_with(timestamp)
 
     def test_string(self):
         from aiorm.orm.declaration import types
@@ -36,11 +36,11 @@ class TypesTestCase(TestCase):
         self.assertIsNone(string.length)
         visitor = mock.Mock()
         string.render_sql(visitor)
-        visitor.render_string.assert_called_with(string)
+        visitor.render_string.assert_called_once_with(string)
 
     def test_text(self):
         from aiorm.orm.declaration import types
         text = types.Text()
         visitor = mock.Mock()
         text.render_sql(visitor)
-        visitor.render_text.assert_called_with(text)
+        visitor.render_text.assert_called_once_with(text)

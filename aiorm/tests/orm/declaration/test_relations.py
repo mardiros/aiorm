@@ -14,7 +14,7 @@ class BasicTestCase(TestCase):
         relation = orm.OneToOne('x.y')
         self.assertEqual(relation.foreign_key, 'x.y')
         relation.render_sql(visitor)
-        visitor.render_one_to_one.assert_called_with(relation)
+        visitor.render_one_to_one.assert_called_once_with(relation)
 
     def test_onetomany(self):
         from aiorm import orm
@@ -22,7 +22,7 @@ class BasicTestCase(TestCase):
         relation = orm.OneToMany('x.y')
         self.assertEqual(relation.foreign_key, 'x.y')
         relation.render_sql(visitor)
-        visitor.render_one_to_many.assert_called_with(relation)
+        visitor.render_one_to_many.assert_called_once_with(relation)
 
     def test_manytomany(self):
         from aiorm import orm
@@ -32,7 +32,7 @@ class BasicTestCase(TestCase):
         self.assertEqual(relation.secondary, 'y')
 
         relation.render_sql(visitor)
-        visitor.render_many_to_many.assert_called_with(relation)
+        visitor.render_many_to_many.assert_called_once_with(relation)
 
 
 class SchemaTestCase(TestCase):

@@ -26,7 +26,7 @@ class CreateTableTestCase(TestCase):
         query, param = stmt.render_sql()
         self.assertEqual(dummy_dialect.query, query)
         self.assertEqual(param, [])
-        dummy_dialect.render_create_table.assert_called_with(table)
+        dummy_dialect.render_create_table.assert_called_once_with(table)
 
     def test_run(self):
 

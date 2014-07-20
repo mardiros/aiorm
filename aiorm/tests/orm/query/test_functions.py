@@ -9,4 +9,4 @@ class FunctionTestCase(TestCase):
         from aiorm.orm.query.functions import utc_now
         visitor = Mock()
         utc_now.render_sql(visitor)
-        visitor.render_utcnow.assert_called_with(utc_now)
+        visitor.render_utcnow.assert_called_once_with(utc_now)
