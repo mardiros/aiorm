@@ -1,4 +1,5 @@
 from weakref import WeakKeyDictionary
+import copy
 
 from ..query import operators
 from .meta import db
@@ -168,6 +169,9 @@ class ForeignKey(BaseColumn):
     def set_options(self):
         for key, val in self.options.items():
             setattr(self.type, key, val)
+        if hasattr(self.type, 'autoincrement'):
+            self.type = copy.copy(self.type)
+            self.type.autoincrement = False
 
     def render_sql(self, renderer):
         return renderer.render_foreign_key(self)
