@@ -48,10 +48,11 @@ class table:
             wrapped.__meta__['tablename'] = self.name
 
             # Populate column descriptors
-            columns = [attr for attr in dir(wrapped)
+            columns = [getattr(wrapped, attr).name
+                       for attr in dir(wrapped)
                        if isinstance(getattr(wrapped, attr), (Column,
                                                               ForeignKey))]
-            wrapped.__meta__['columns'] = columns
+            wrapped.__meta__['columns'] = sorted(columns)
 
             log.info('Register table {}'.format(self.name))
             db[self.database][self.name] = wrapped

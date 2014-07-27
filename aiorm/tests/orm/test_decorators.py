@@ -38,6 +38,7 @@ class TableDecoratorTestCase(TestCase):
         class Table:
             id = orm.PrimaryKey(orm.Integer)
             name = orm.Column(orm.String)
+            _password = orm.Column('password', orm.String)
 
         self.assertEqual(self.category, 'aiorm')
         self.assertEqual(self.wrapped, Table)
@@ -50,7 +51,7 @@ class TableDecoratorTestCase(TestCase):
         self.assertEqual(meta,
                          {'alias': 't{}'.format(oldcounter),
                           'collation': 'fr_FR.UTF8',
-                          'columns': ['id', 'name'],
+                          'columns': ['id', 'name', 'password'],
                           'database': 'db0',
                           'foreign_keys': {},
                           'primary_key': {'id': Table.id},
