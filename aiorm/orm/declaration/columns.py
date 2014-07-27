@@ -24,6 +24,7 @@ class BaseField:
             self.type = args[0]
 
         self.model = None
+        self.data = WeakKeyDictionary()
 
     def _get_model(self, mode):
         raise NotImplementedError('{} does not implement _get_model'
@@ -62,7 +63,6 @@ class BaseColumn(BaseField):
         self.unique = unique
         self.immutable = immutable
         self.primary_key = primary_key
-        self.data = WeakKeyDictionary()
 
     def _get_model_cls(self, model_cls):
         # class access

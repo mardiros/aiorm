@@ -36,11 +36,14 @@ class OneToOne(BaseRelation):
 
     @asyncio.coroutine
     def _get_model(self, model):
-        self._resolve_foreign_keys()
-        fkey = self.foreign_key.foreign_key
-        value = self.model.__meta__['pkv'](model)[fkey.name]
-        return (yield from Select(fkey.model).where(fkey == value)
-                                             .run(fetchall=False))
+        if model not in self.data:
+            self._resolve_foreign_keys()
+            fkey = self.foreign_key.foreign_key
+            value = self.model.__meta__['pkv'](model)[fkey.name]
+            data = (yield from Select(fkey.model).where(fkey == value)
+                                                 .run(fetchall=False))
+            self.data[model] = data
+        return self.data[model]
 
     def __set__(self, model, value):
         if not isinstance(value, self.foreign_key.foreign_key.model):

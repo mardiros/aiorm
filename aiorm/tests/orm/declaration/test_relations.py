@@ -72,14 +72,14 @@ class SchemaTestCase(TestCase):
             from datetime import datetime
             from aiorm.tests.fixtures.sample import Preference, UserPreference
 
-            userpref = UserPreference(user_id=1, preference_id=1, value='1')
+            userpref = UserPreference(user_id=1, preference_id=19, value='1')
             created_at = datetime.now()
             driver.DummyCursor.return_one = [
-                [created_at, 'default', 1, 'name', 'str'],
+                [created_at, 'default', 19, 'name', 'str'],
             ]
             pref = yield from userpref.preference
             self.assertIsInstance(pref, Preference)
-            self.assertEqual(pref.id, 1)
+            self.assertEqual(pref.id, 19)
             self.assertEqual(pref.created_at, created_at)
             self.assertEqual(pref.key, 'name')
             self.assertEqual(pref.type, 'str')
@@ -87,7 +87,7 @@ class SchemaTestCase(TestCase):
 
             driver.DummyCursor.return_one = [None]
             pref = yield from userpref.preference
-            self.assertIsNone(pref)
+            self.assertEqual(pref.id, 19, 'The preference is not cached')
 
         asyncio.get_event_loop().run_until_complete(aiotest())
 
