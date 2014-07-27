@@ -91,6 +91,12 @@ class SchemaTestCase(TestCase):
 
         asyncio.get_event_loop().run_until_complete(aiotest())
 
+    def test_one_to_one_set_foreign_key(self):
+        from aiorm.tests.fixtures.sample import Preference, UserPreference
+        preference = Preference(id=12)
+        user_preference = UserPreference()
+        user_preference.preference = preference
+        self.assertEqual(user_preference.preference_id, 12)
 
     def test_one_to_many_resolve_foreign_keys(self):
         from aiorm.tests.fixtures.sample import User, UserPreference

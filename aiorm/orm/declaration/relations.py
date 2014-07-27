@@ -43,7 +43,12 @@ class OneToOne(BaseRelation):
                                              .run(fetchall=False))
 
     def __set__(self, model, value):
-        raise NotImplementedError
+        if not isinstance(value, self.foreign_key.foreign_key.model):
+            raise RuntimeError('Invalid value for relation {}.{}.{}'.format(
+                self.model.__meta__['database'],
+                self.model.__meta__['tablename'], self.name))
+        value = getattr(value, self.foreign_key.foreign_key.name)
+        setattr(model, self.foreign_key.name, value)
 
 
 class OneToMany(OneToOne):
