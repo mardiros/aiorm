@@ -16,7 +16,9 @@ with open(os.path.join(here, NAME, '__init__.py')) as version:
 
 
 requires = ['venusian>=1.0a7', 'aiopg']
-
+tests_require = ['coverage', 'nose']
+extras_require = {'test': tests_require,
+                  }
 
 setup(name=NAME,
       version=VERSION,
@@ -35,6 +37,8 @@ setup(name=NAME,
       zip_safe=False,
       test_suite='{}.tests'.format(NAME),
       install_requires=requires,
+      tests_require=tests_require,
+      extras_require=extras_require,
       entry_points="""\
       [console_scripts]
       {pkg} = {pkg}.__main__:main
