@@ -22,27 +22,11 @@ class CreateTable(_NoResultQuery):
 class CreateSchema:
     def __init__(self, database):
         try:
-            self.database = meta.db[database]
+            self.database = database
         except KeyError  as exc:
             raise RuntimeError('Database {} not registered'.format(exc))
 
-    def list_tables(self):
-        """ Get the database table in the correct order for the creation """
-        tables_list = []
-
-        def add_table(table):
-            for foreign_key in table.__meta__['foreign_keys'].values():
-                if table != foreign_key.foreign_key.model:
-                    add_table(foreign_key.foreign_key.model)
-
-            if table not in tables_list:
-                tables_list.append(table)
-
-        [add_table(table) for table in self.database.values()]
-
-        return tables_list
-
     @asyncio.coroutine
     def run(self):
-        for table in self.list_tables():
+        for table in meta.list_tables(self.database):
             yield from CreateTable(table).run()

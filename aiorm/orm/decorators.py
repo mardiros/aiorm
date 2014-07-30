@@ -5,7 +5,7 @@ import importlib
 import venusian
 
 from .declaration import Column, ForeignKey
-from .declaration.meta import db
+from .declaration import meta
 
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,8 @@ class table:
                      'alias': 't{}'.format(self._counter),
                      'database': self.database,
                      'collation': self.collation,
-                     'columns': None,
+                     'columns': None,     # column name in the database
+                     'attributes': None,  # map col name to attribute name
                      # Populate on column descriptors
                      'primary_key': {},
                      'pkv': None,
@@ -47,15 +48,7 @@ class table:
                                    self.name).lower()
             wrapped.__meta__['tablename'] = self.name
 
-            # Populate column descriptors
-            columns = [getattr(wrapped, attr).name
-                       for attr in dir(wrapped)
-                       if isinstance(getattr(wrapped, attr), (Column,
-                                                              ForeignKey))]
-            wrapped.__meta__['columns'] = sorted(columns)
-
-            log.info('Register table {}'.format(self.name))
-            db[self.database][self.name] = wrapped
+            meta.register(self.database, self.name, wrapped)
 
         venusian.attach(wrapped, callback, category='aiorm')
         return wrapped
@@ -66,3 +59,18 @@ def scan(*modules):
     for mod in modules:
         log.info('Scanning {}'.format(mod))
         scanner.scan(importlib.import_module(mod))
+
+    for dbname, db in meta.list_all_tables().items():
+        for table in db:
+            # Populate column descriptors
+            columns = [getattr(table, attr).name
+                       for attr in dir(table)
+                       if isinstance(getattr(table, attr), (Column,
+                                                            ForeignKey))]
+            table.__meta__['columns'] = sorted(columns)
+
+            fields = {getattr(table, attr).name: attr
+                       for attr in dir(table)
+                       if isinstance(getattr(table, attr), (Column,
+                                                            ForeignKey))}
+            table.__meta__['attributes'] = fields

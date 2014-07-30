@@ -156,9 +156,11 @@ class ForeignKey(BaseColumn):
     """ Declare a foreign key """
 
     def __init__(self, *args, **options):
+        super().__init__(*args, **options)
+        self.default_value = options.pop('default', None)
+        self.autofield = options.get('autoincrement', False)
         self.nullable = options.pop('nullable', False)
         self.unique = options.pop('unique', False)
-        super().__init__(*args, **options)
 
         self.foreign_key =  None
         self.options = options
@@ -188,7 +190,12 @@ class ForeignKey(BaseColumn):
         if not self.foreign_key:
             meta = self.model.__meta__
             table, field = self.type.split('.', 1)
-            self.foreign_key = getattr(db[meta['database']][table], field)
+            try:
+                self.foreign_key = getattr(db[meta['database']][table], field)
+            except KeyError as exc:
+                raise RuntimeError('Table {} is not registred in database {}'
+                                   ''.format(table, meta['database']))
+
             self.type = self.foreign_key.type.__class__()
             self.set_options()
 

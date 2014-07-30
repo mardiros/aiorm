@@ -136,8 +136,9 @@ class SchemaTestCase(TestCase):
         user = sample.User(id=1)
         meta = sample.User.__meta__
         self.assertEqual(sorted(meta.keys()),
-                         ['alias', 'collation', 'columns', 'database',
-                          'foreign_keys', 'pkv', 'primary_key', 'tablename'])
+                         ['alias', 'attributes', 'collation', 'columns',
+                          'database', 'foreign_keys', 'pkv', 'primary_key',
+                          'tablename'])
         self.assertEqual(meta['database'], 'sample')
         self.assertEqual(meta['tablename'], 'user')
         self.assertEqual(meta['collation'], 'en_US.UTF8')

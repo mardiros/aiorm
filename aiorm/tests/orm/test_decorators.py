@@ -47,11 +47,12 @@ class TableDecoratorTestCase(TestCase):
         self.assertEqual(orm.table._counter, oldcounter + 1)
         self.assertEqual(Table, db['db0']['table1'])
         meta = Table.__meta__.copy()
-        self.assertTrue(callable(meta.pop('pkv')))
         self.assertEqual(meta,
                          {'alias': 't{}'.format(oldcounter),
                           'collation': 'fr_FR.UTF8',
-                          'columns': ['id', 'name', 'password'],
+                          'columns': None,
+                          'attributes': None,
+                          'pkv': None,
                           'database': 'db0',
                           'foreign_keys': {},
                           'primary_key': {'id': Table.id},

@@ -65,13 +65,15 @@ class Dialect:
 
     def render_insert(self, model):
         meta = model.__meta__
+        attributes = meta['attributes']
         fields = ', '.join(['"{}"'.format(col) for col in meta['columns']
-            if not getattr(model.__class__, col).autofield])
-        values = ', '.join([getattr(model, col).render_sql(self)  # defaults
-            if interfaces.IFunction.providedBy(getattr(model, col))
+            if not getattr(model.__class__, attributes[col]).autofield])
+        values = ', '.join(
+            [getattr(model, attributes[col]).render_sql(self)  # defaults
+            if interfaces.IFunction.providedBy(getattr(model, attributes[col]))
             else '%s'
             for col in meta['columns']
-            if not getattr(model.__class__, col).autofield])
+            if not getattr(model.__class__, attributes[col]).autofield])
         all_fields = ', '.join(['"{}"'.format(col) for col in meta['columns']])
 
         self.query += ('INSERT INTO "{}"({})\n'
@@ -80,9 +82,11 @@ class Dialect:
                                                 fields,
                                                 values,
                                                 all_fields)
-        self.parameters = [getattr(model, col) for col in meta['columns']
-            if not getattr(model.__class__, col).autofield
-            and not hasattr(getattr(model, col), 'render_sql')]
+        self.parameters = [
+            getattr(model, attributes[col])
+            for col in meta['columns']
+            if not getattr(model.__class__, attributes[col]).autofield
+            and not hasattr(getattr(model, attributes[col]), 'render_sql')]
 
     def render_update(self, model):
         meta = model.__meta__
@@ -187,8 +191,10 @@ class CreateTableDialect:
     def render_create_table(self, model_class):
         meta = model_class.__meta__
         columns = set(meta['columns'])
+        attributes = meta['attributes']
 
-        [getattr(model_class, col).render_sql(self) for col in meta['columns']]
+        [getattr(model_class, attributes[col]).render_sql(self)
+         for col in meta['columns']]
         columns_declaration = []
         pkeys = sorted(self.primary_key_cols.keys())
         for key in pkeys:

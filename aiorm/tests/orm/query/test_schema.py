@@ -52,27 +52,6 @@ class CreateSchemaTestCase(TestCase):
                  dialect.CreateTableDialectFixture,
                  ]
 
-
-    def test_list_tables(self):
-        from aiorm.orm.query.schema import CreateSchema
-
-        stmt = CreateSchema('sample')
-        tables = stmt.list_tables()
-        self.assertEqual(set(tables),
-                         {sample.Group,
-                          sample.User,
-                          sample.UserGroup,
-                          sample.Preference,
-                          sample.UserPreference})
-        self.assertGreater(tables.index(sample.UserGroup),
-                           tables.index(sample.User))
-        self.assertGreater(tables.index(sample.UserGroup),
-                           tables.index(sample.Group))
-        self.assertGreater(tables.index(sample.UserPreference),
-                           tables.index(sample.Preference))
-        self.assertGreater(tables.index(sample.UserPreference),
-                           tables.index(sample.User))
-
     def test_run(self):
 
         @asyncio.coroutine
