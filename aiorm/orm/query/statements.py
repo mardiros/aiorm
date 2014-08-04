@@ -30,34 +30,48 @@ class _Query:
         return self._child
 
     @asyncio.coroutine
-    def run(self, fetchall=True):
-        driver = registry.get_driver(self._args[0].__meta__['database'])
-        with (yield from driver.cursor()) as cur:
+    def run(self, cursor=None, fetchall=True):
+
+        @asyncio.coroutine
+        def wrapped(cursor):
             sql_statement = self.render_sql()
             log.debug('{} % {!r}'.format(*sql_statement))
-            yield from cur.execute(*sql_statement)
-            return ((yield from cur.fetchall())
-                    if fetchall else (yield from cur.fetchone())
-                    )
+            yield from cursor.execute(*sql_statement)
+            return ((yield from cursor.fetchall())
+                    if fetchall else (yield from cursor.fetchone()))
+
+        if cursor:
+            return (yield from wrapped(cursor))
+        else:
+            driver = registry.get_driver(self._args[0].__meta__['database'])
+            with (yield from driver.cursor()) as cursor:
+                return (yield from wrapped(cursor))
 
 
 class _NoResultQuery(_Query):
 
     @asyncio.coroutine
-    def run(self):
-        driver = registry.get_driver(self._args[0].__meta__['database'])
-        with (yield from driver.cursor()) as cur:
+    def run(self, cursor=None):
+        @asyncio.coroutine
+        def wrapped(cursor):
             sql_statement = self.render_sql()
             log.debug('{!r} % {!r}'.format(*sql_statement))
-            yield from cur.execute(*sql_statement)
+            yield from cursor.execute(*sql_statement)
             return True
+
+        if cursor:
+            return (yield from wrapped(cursor))
+        else:
+            driver = registry.get_driver(self._args[0].__meta__['database'])
+            with (yield from driver.cursor()) as cursor:
+                return (yield from wrapped(cursor))
 
 
 class _SingleResultQuery(_Query):
 
     @asyncio.coroutine
-    def run(self):
-        row = yield from super().run(fetchall=False)
+    def run(self, cursor=None):
+        row = yield from super().run(fetchall=False, cursor=cursor)
         if row is None:
             return None
         model = self._args[0]()
@@ -69,7 +83,7 @@ class _SingleResultQuery(_Query):
 class _ManyResultQuery(_Query):
 
     @asyncio.coroutine
-    def run(self, fetchall=True):
+    def run(self, cursor=None, fetchall=True):
 
         def to_model(row):
             if row is None:
@@ -83,7 +97,7 @@ class _ManyResultQuery(_Query):
             for row in rows:
                 yield to_model(row)
 
-        rows = yield from super().run(fetchall=fetchall)
+        rows = yield from super().run(fetchall=fetchall, cursor=cursor)
         return iter_models(rows) if fetchall else to_model(rows)
 
 
@@ -115,8 +129,8 @@ class Insert(_Query):
         return renderer.query, renderer.parameters
 
     @asyncio.coroutine
-    def run(self):
-        row = yield from super().run(fetchall=False)
+    def run(self, cursor=None):
+        row = yield from super().run(fetchall=False, cursor=cursor)
         if row is None:
             return None
         model = self._args[0]

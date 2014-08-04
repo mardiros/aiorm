@@ -91,7 +91,8 @@ class Dialect:
     def render_update(self, model):
         meta = model.__meta__
         fields = ', '.join(['"{}" = %s'.format(col) for col in meta['columns']
-            if not getattr(model.__class__, col).immutable])
+            if not getattr(model.__class__,
+                           meta['attributes'][col]).immutable])
         all_fields = ', '.join(['"{}"'.format(col) for col in meta['columns']])
         keys = list(model.__class__.__meta__['pkv'](model).items())
 
@@ -102,8 +103,9 @@ class Dialect:
                        'WHERE {}\n'
                        'RETURNING {}\n').format(meta['tablename'], fields,
                                                 where, all_fields)
-        self.parameters = [getattr(model, col) for col in meta['columns']
-            if not getattr(model.__class__, col).immutable]
+        self.parameters = [getattr(model, meta['attributes'][col])
+                           for col in meta['columns']
+            if not getattr(model.__class__, meta['attributes'][col]).immutable]
         self.parameters += [key[1] for key in keys]
 
     def render_delete(self, model):
@@ -173,6 +175,15 @@ class Dialect:
     def render_less_than_or_equal(self, field):
         self.__render_cmp(field, '<=')
 
+    def render_begin_transaction(self):
+        return 'begin'
+
+    def render_rollback_transaction(self):
+        return 'rollback'
+
+    def render_commit_transaction(self):
+        return 'commit'
+
     # XXX those methods return somethink instead of righting in the query
     def render_utcnow(self, utcnow):
         return "(NOW() at time zone 'utc')"
@@ -205,10 +216,11 @@ class CreateTableDialect:
             columns_declaration.append(self.columns[key])
 
         if pkeys:
-            columns_declaration.append('CONSTRAINT "{}_pkey" PRIMARY KEY ("{}")'
-                                       ''.format(meta['tablename'],
-                                                 '", "'.join(pkeys)
-                                                 ))
+            columns_declaration.append(
+                'CONSTRAINT "{}_pkey" PRIMARY KEY ("{}")'
+                ''.format(meta['tablename'],
+                          '", "'.join(pkeys)
+                          ))
         columns_declaration.extend(self.constraint)
         self.query = ('CREATE TABLE IF NOT EXISTS"{}" (\n'
                       '  {}\n'

@@ -34,8 +34,17 @@ class Driver:
 
     @asyncio.coroutine
     def disconnect(self):
-        # self.pool.close() ???
-        pass
+        yield from self.pool.clear()
+
+    # Used for context manager access
 
     def cursor(self):
         return self.pool.cursor()  # return the coroutine
+
+    # Used for transaction
+
+    def acquire(self):
+        return self.pool.acquire()  # return the coroutine
+
+    def release(self, connection):
+        return self.pool.release(connection)

@@ -33,3 +33,19 @@ class PostgresTestCase(TestCase):
                                                   password='secret',
                                                   database='db')
         asyncio.get_event_loop().run_until_complete(aiotest())
+
+    def test_disconnect(self):
+
+        @asyncio.coroutine
+        def aiotest():
+            from aiorm.driver.postgresql.aiopg import Driver
+            driver = Driver()
+            driver.pool = mock.Mock()
+            @asyncio.coroutine
+            def clear(*args, **kwargs):
+                driver.pool.mocked_cleared(*args, **kwargs)
+            driver.pool.clear = clear
+
+            yield from driver.disconnect()
+            driver.pool.mocked_cleared.assert_called_once_with()
+        asyncio.get_event_loop().run_until_complete(aiotest())

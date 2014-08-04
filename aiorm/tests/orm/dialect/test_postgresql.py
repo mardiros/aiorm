@@ -108,15 +108,6 @@ WHERE {}."name" = %s
 """.format(sample.Group.__meta__['alias'], sample.User.__meta__['alias']))
         self.assertEqual(self._dialect.parameters, ['wheel', 'alice'])
 
-    def test_render_where(self):
-        self._dialect.render_where(sample.Group.name == 'wheel',
-                                   sample.User.login == 'alice')
-        self.assertEqual(self._dialect.query, """\
-WHERE {}."name" = %s
-  AND {}."login" = %s
-""".format(sample.Group.__meta__['alias'], sample.User.__meta__['alias']))
-        self.assertEqual(self._dialect.parameters, ['wheel', 'alice'])
-
     def test_render_equal(self):
         equal = mock.Mock()
         equal.column = sample.Group.name
@@ -166,6 +157,18 @@ WHERE {}."name" = %s
                           '{}."name" <= %s'
                           ''.format(sample.Group.__meta__['alias']))
         self.assertEqual(self._dialect.parameters, ['staff'])
+
+    def test_render_begin_transaction(self):
+        rendered = self._dialect.render_begin_transaction()
+        self.assertEqual(rendered, 'begin')
+
+    def test_render_rollback_transaction(self):
+        rendered = self._dialect.render_rollback_transaction()
+        self.assertEqual(rendered, 'rollback')
+
+    def test_render_commit_transaction(self):
+        rendered = self._dialect.render_commit_transaction()
+        self.assertEqual(rendered, 'commit')
 
     def test_render_utcnow(self):
         rendered = self._dialect.render_utcnow(mock.Mock())

@@ -15,7 +15,7 @@ class DummyCursor:
     return_one = [None]
 
     @asyncio.coroutine
-    def execute(self, query, parameters):
+    def execute(self, query, parameters=None):
         DummyCursor.last_query = query
         DummyCursor.last_parameters = parameters
 
@@ -38,6 +38,7 @@ class DummyCursor:
 class DummyDriver:
     last_url = None
     connected = False
+    released = True
     mock = DummyCursor()
 
     @asyncio.coroutine
@@ -52,8 +53,17 @@ class DummyDriver:
         self.__class__.connected = False
 
     @asyncio.coroutine
-    def cursor(self):
+    def cursor(self, timeout=None):
         return self.__class__.mock
+
+    @asyncio.coroutine
+    def acquire(self):
+        self.__class__.released = False
+        return self
+
+    @asyncio.coroutine
+    def release(self):
+        self.__class__.released = True
 
 
 class DriverFixture:

@@ -27,6 +27,6 @@ class CreateSchema:
             raise RuntimeError('Database {} not registered'.format(exc))
 
     @asyncio.coroutine
-    def run(self):
+    def run(self, cursor=None):
         for table in meta.list_tables(self.database):
-            yield from CreateTable(table).run()
+            yield from CreateTable(table).run(cursor)
