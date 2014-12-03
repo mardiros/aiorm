@@ -27,12 +27,13 @@ setup(name=NAME,
       classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.4',
-        'License :: OSI Approved :: BSD License'
+        'License :: OSI Approved :: BSD License',
+        'Development Status :: 3 - Alpha',
         ],
       author='Guillaume Gauvrit',
       author_email='guillaume@gauvr.it',
-      url='',
-      keywords='asyncio distributed job',
+      url='https://github.com/mardiros/aiorm',
+      keywords='asyncio orm',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
@@ -40,8 +41,4 @@ setup(name=NAME,
       install_requires=requires,
       tests_require=tests_require,
       extras_require=extras_require,
-      entry_points="""\
-      [console_scripts]
-      {pkg} = {pkg}.__main__:main
-      """.format(pkg=NAME),
       )
