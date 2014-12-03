@@ -27,6 +27,7 @@ setup(name=NAME,
       classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.4',
+        'License :: OSI Approved :: BSD License'
         ],
       author='Guillaume Gauvrit',
       author_email='guillaume@gauvr.it',
