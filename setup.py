@@ -15,7 +15,7 @@ with open(os.path.join(here, NAME, '__init__.py')) as version:
                          re.S).match(version.read()).group(1)
 
 
-requires = ['venusian>=1.0a7', 'aiopg']
+requires = ['venusian>=1.0a7', 'aiopg', 'zope.interface']
 tests_require = ['coverage', 'nose']
 extras_require = {'test': tests_require,
                   }
