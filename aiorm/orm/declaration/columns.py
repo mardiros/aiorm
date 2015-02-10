@@ -174,6 +174,9 @@ class ForeignKey(BaseColumn):
         if hasattr(self.type, 'autoincrement'):
             self.type = copy.copy(self.type)
             self.type.autoincrement = False
+        self.length = None
+        if hasattr(self.type, 'length'):
+            self.length = self.type.length
 
     def render_sql(self, renderer):
         return renderer.render_foreign_key(self)
@@ -195,8 +198,7 @@ class ForeignKey(BaseColumn):
             except KeyError as exc:
                 raise RuntimeError('Table {} is not registred in database {}'
                                    ''.format(table, meta['database']))
-
-            self.type = self.foreign_key.type.__class__()
+            self.type = self.foreign_key.type
             self.set_options()
 
         self.model.__meta__['foreign_keys'][self.name] = self
