@@ -35,7 +35,8 @@ class _Query:
         @asyncio.coroutine
         def wrapped(cursor):
             sql_statement = self.render_sql()
-            log.debug('{} % {!r}'.format(*sql_statement))
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug('{} % {!r}'.format(*sql_statement))
             yield from cursor.execute(*sql_statement)
             return ((yield from cursor.fetchall())
                     if fetchall else (yield from cursor.fetchone()))
