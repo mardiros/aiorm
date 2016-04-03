@@ -108,6 +108,20 @@ WHERE {}."name" = %s
 """.format(sample.Group.__meta__['alias'], sample.User.__meta__['alias']))
         self.assertEqual(self._dialect.parameters, ['wheel', 'alice'])
 
+    def test_render_group_by(self):
+        self._dialect.render_group_by(sample.Group.name, sample.User.login)
+        self.assertEqual(self._dialect.query, """\
+GROUP BY {}."name", {}."login"
+""".format(sample.Group.__meta__['alias'], sample.User.__meta__['alias']))
+        self.assertEqual(self._dialect.parameters, [])
+
+    def test_render_order_by(self):
+        self._dialect.render_order_by(sample.Group.name, sample.User.login)
+        self.assertEqual(self._dialect.query, """\
+ORDER BY {}."name", {}."login"
+""".format(sample.Group.__meta__['alias'], sample.User.__meta__['alias']))
+        self.assertEqual(self._dialect.parameters, [])
+
     def test_render_equal(self):
         equal = mock.Mock()
         equal.column = sample.Group.name

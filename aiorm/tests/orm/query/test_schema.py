@@ -17,7 +17,6 @@ class CreateTableTestCase(TestCase):
     def test_render_sql(self):
         from aiorm.orm.query.schema import CreateTable
 
-        visitor = Mock()
         table = object()
 
         dummy_dialect = dialect.DummyCreateTableDialect()

@@ -21,7 +21,6 @@ class GetTestCase(TestCase):
         dummy_dialect = dialect.DummyDialect()
         dummy_dialect.render_get.assert_called_once_with(sample.User, 1)
 
-
     def test_where(self):
         from aiorm.orm.query import statements as stmt
         where = stmt.Get(sample.User, 1).where
@@ -30,6 +29,43 @@ class GetTestCase(TestCase):
         condition = Mock()
         query, parameters = where(condition).render_sql(dummy_dialect)
         dummy_dialect.render_where.assert_called_once_with(condition)
+
+    def test_group_by(self):
+        from aiorm.orm.query import statements as stmt
+        group_by = stmt.Get(sample.User, 1).group_by
+        self.assertIsInstance(group_by, stmt.GroupBy)
+        dummy_dialect = dialect.DummyDialect()
+        condition = Mock()
+        condition2 = Mock()
+        query, parameters = group_by(condition,
+                                     condition2).render_sql(dummy_dialect)
+        dummy_dialect.render_group_by.assert_called_once_with(condition,
+                                                              condition2)
+
+    def test_order_by(self):
+        from aiorm.orm.query import statements as stmt
+        order_by = stmt.Get(sample.User, 1).order_by
+        self.assertIsInstance(order_by, stmt.OrderBy)
+        dummy_dialect = dialect.DummyDialect()
+        condition = Mock()
+        condition2 = Mock()
+        query, parameters = order_by(condition,
+                                     condition2).render_sql(dummy_dialect)
+        dummy_dialect.render_order_by.assert_called_once_with(condition,
+                                                              condition2)
+
+    def test_limit(self):
+        from aiorm.orm.query import statements as stmt
+        limit = stmt.Get(sample.User, 1).limit
+        self.assertIsInstance(limit, stmt.Limit)
+        dummy_dialect = dialect.DummyDialect()
+        number = Mock()
+        query, parameters = limit(number).render_sql(dummy_dialect)
+        dummy_dialect.render_limit.assert_called_once_with(number)
+        dummy_dialect.render_limit.reset_mock()
+        offset = Mock()
+        query, parameters = limit(number, offset).render_sql(dummy_dialect)
+        dummy_dialect.render_limit.assert_called_once_with(number, offset)
 
     def test_run(self):
 

@@ -153,6 +153,36 @@ class Dialect:
             statement.render_sql(self)
         self.query += '\n'
 
+    def render_order_by(self, field, *fields, **unused):
+        self.query += 'ORDER BY {}."{}"'.format(
+            field.model.__meta__['alias'],
+            field.name,
+            )
+        for field in fields:
+            self.query += ', {}."{}"'.format(
+                field.model.__meta__['alias'],
+                field.name,
+                )
+        self.query += '\n'
+
+    def render_group_by(self, field, *fields, **unused):
+        self.query += 'GROUP BY {}."{}"'.format(
+            field.model.__meta__['alias'],
+            field.name,
+            )
+        for field in fields:
+            self.query += ', {}."{}"'.format(
+                field.model.__meta__['alias'],
+                field.name,
+                )
+        self.query += '\n'
+
+    def render_limit(self, limit, offset=None, **unused):
+        self.query += 'LIMIT {}'.format(limit)
+        if offset is not None:
+            self.query += ' OFFSET {}'.format(offset)
+        self.query += '\n'
+
     def __render_cmp(self, field, operator):
         self.query += '{}."{}" {} %s'.format(
             field.column.model.__meta__['alias'],

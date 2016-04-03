@@ -216,6 +216,40 @@ class Where(Statement):
         return renderer.query, renderer.parameters
 
 
+@implementer(interfaces.ILimit)
+class Limit(Statement):
+
+    def render_sql(self, renderer):
+        renderer.render_limit(*self._args, **self._kwargs)
+        if self._child:
+            self._child.render_sql(renderer)
+        return renderer.query, renderer.parameters
+
+
+@implementer(interfaces.IGroupBy)
+class GroupBy(Statement):
+    """ A Where clause statement """
+
+    def render_sql(self, renderer):
+        renderer.render_group_by(*self._args, **self._kwargs)
+        if self._child:
+            self._child.render_sql(renderer)
+        return renderer.query, renderer.parameters
+
+
+@implementer(interfaces.IOrderBy)
+class OrderBy(Statement):
+
+    def render_sql(self, renderer):
+        renderer.render_order_by(*self._args, **self._kwargs)
+        if self._child:
+            self._child.render_sql(renderer)
+        return renderer.query, renderer.parameters
+
+
 registry.register(Where, interfaces.IWhere)
 registry.register(Join, interfaces.IJoin)
 registry.register(LeftJoin, interfaces.ILeftJoin)
+registry.register(Limit, interfaces.ILimit)
+registry.register(GroupBy, interfaces.IGroupBy)
+registry.register(OrderBy, interfaces.IOrderBy)

@@ -25,15 +25,15 @@ class IWhere(IStatement):
 
 
 class IGroupBy(IStatement):
-    """ A Where clause statement """
+    """ A Group By clause statement """
 
 
 class IOrderBy(IStatement):
-    """ A Where clause statement """
+    """ An Order By clause statement """
 
 
 class ILimit(IStatement):
-    """ A Where clause statement """
+    """ A Limit clause statement """
 
 
 class IFunction(Interface):
