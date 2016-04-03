@@ -72,3 +72,13 @@ class OperatorTestCase(TestCase):
         self.assertEqual(stmt.value, value)
         stmt.render_sql(visitor)
         visitor.render_less_than_or_equal.assert_called_once_with(stmt)
+
+    def test_in(self):
+        from aiorm.orm.query.operators import in_
+        visitor = Mock()
+        column, values = Mock(), (Mock(), Mock())
+        stmt = in_(column, *values)
+        self.assertEqual(stmt.column, column)
+        self.assertEqual(stmt.values, values)
+        stmt.render_sql(visitor)
+        visitor.render_in.assert_called_once_with(stmt)

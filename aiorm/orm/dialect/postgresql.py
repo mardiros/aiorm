@@ -205,6 +205,13 @@ class Dialect:
     def render_less_than_or_equal(self, field):
         self.__render_cmp(field, '<=')
 
+    def render_in(self, field):
+        self.query += '{}."{}" IN ({})'.format(
+            field.column.model.__meta__['alias'],
+            field.column.name,
+            ', '.join(('%s' for _ in field.values)))
+        [self.parameters.append(val) for val in field.values]
+
     def render_begin_transaction(self):
         return 'begin'
 

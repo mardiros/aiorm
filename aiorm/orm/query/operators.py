@@ -45,3 +45,12 @@ class less_than(equal):
 class less_than_or_equal(equal):
     def render_sql(self, renderer):
         return renderer.render_less_than_or_equal(self)
+
+
+class in_:
+    def __init__(self, column, *values):
+        self.column = column
+        self.values = values
+
+    def render_sql(self, renderer):
+        return renderer.render_in(self)

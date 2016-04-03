@@ -172,6 +172,16 @@ ORDER BY {}."name", {}."login"
                           ''.format(sample.Group.__meta__['alias']))
         self.assertEqual(self._dialect.parameters, ['staff'])
 
+    def test_render_in(self):
+        in_ = mock.Mock()
+        in_.column = sample.Group.name
+        in_.values = ['staff']
+        self._dialect.render_in(in_)
+        self.assertEqual(self._dialect.query,
+                          '{}."name" IN (%s)'
+                          ''.format(sample.Group.__meta__['alias']))
+        self.assertEqual(self._dialect.parameters, ['staff'])
+
     def test_render_begin_transaction(self):
         rendered = self._dialect.render_begin_transaction()
         self.assertEqual(rendered, 'begin')
