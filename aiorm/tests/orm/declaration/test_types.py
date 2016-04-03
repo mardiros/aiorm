@@ -44,3 +44,24 @@ class TypesTestCase(TestCase):
         visitor = mock.Mock()
         text.render_sql(visitor)
         visitor.render_text.assert_called_once_with(text)
+
+    def test_citext(self):
+        from aiorm.orm.declaration import types
+        text = types.CIText()
+        visitor = mock.Mock()
+        text.render_sql(visitor)
+        visitor.render_citext.assert_called_once_with(text)
+
+    def test_uuid(self):
+        from aiorm.orm.declaration import types
+        text = types.UUID()
+        visitor = mock.Mock()
+        text.render_sql(visitor)
+        visitor.render_uuid.assert_called_once_with(text)
+
+    def test_boolean(self):
+        from aiorm.orm.declaration import types
+        boolean = types.Boolean()
+        visitor = mock.Mock()
+        boolean.render_sql(visitor)
+        visitor.render_boolean.assert_called_once_with(boolean)

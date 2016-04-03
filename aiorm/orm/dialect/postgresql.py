@@ -283,3 +283,12 @@ class CreateTableDialect:
 
     def render_text(self, field):
         return 'text'
+
+    def render_citext(self, field):
+        return 'citext'
+
+    def render_uuid(self, field):
+        return 'uuid'
+
+    def render_boolean(self, field):
+        return 'boolean'
