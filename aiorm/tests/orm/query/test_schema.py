@@ -36,7 +36,7 @@ class CreateTableTestCase(TestCase):
             dummy_dialect = dialect.DummyCreateTableDialect()
             yield from registry.connect('/sample')
             yield from CreateTable(sample.Group).run()
-            dummy_dialect.render_sql.assert_called_once()
+            dummy_dialect.render_create_table.assert_called_once_with(sample.Group)
             # last query is a mock, we just ensure that a query has been
             # executed, not that the query is valid, this is a dialect test
             self.assertIsNotNone(driver.DummyCursor.last_query)
@@ -60,7 +60,8 @@ class CreateSchemaTestCase(TestCase):
             dummy_dialect = dialect.DummyCreateTableDialect()
             yield from registry.connect('/sample')
             yield from CreateSchema('sample').run()
-            dummy_dialect.render_sql.assert_called()
+            count = dummy_dialect.render_create_table.call_count
+            self.assertEqual(count, 5)
             # last query is a mock, we just ensure that at least, a query
             # has been executed, not that the query is valid, this is a
             # dialect test
