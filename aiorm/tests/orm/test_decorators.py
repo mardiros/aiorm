@@ -17,11 +17,11 @@ class TableDecoratorTestCase(TestCase):
         self.venusian.start()
 
     def tearDown(self):
-        super().tearDown()
         self.venusian.stop()
         self.wrapped = None
         self.callback = None
         self.category = None
+        super().tearDown()
 
     def _mock_attach(self, wrapped, callback, category):
         self.wrapped = wrapped

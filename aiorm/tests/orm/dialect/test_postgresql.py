@@ -43,6 +43,15 @@ FROM "group" AS {0}
 """.format(sample.Group.__meta__['alias']))
         self.assertEqual(self._dialect.parameters, [])
 
+    def test_render_select_count(self):
+        from aiorm import orm
+        self._dialect.render_select(orm.count(sample.Group.id))
+        self.assertEqual(self._dialect.query, """\
+SELECT COUNT({0}."id")
+FROM "group" AS {0}
+""".format(sample.Group.__meta__['alias']))
+        self.assertEqual(self._dialect.parameters, [])
+
     def test_render_insert(self):
         group = sample.Group(name='test')
         self._dialect.render_insert(group)
@@ -200,6 +209,17 @@ ORDER BY {}."name", {}."login"
         self.assertEqual(rendered, "(NOW() at time zone 'utc')")
         self.assertEqual(self._dialect.query, '')
         self.assertEqual(self._dialect.parameters, [])
+
+    def test_render_count_field(self):
+        field = mock.Mock()
+        field.model.__meta__ = {'alias': 'a'}
+        field.name = 'my_name'
+        rendered = self._dialect.render_count(field)
+
+        self.assertEqual(rendered, 'COUNT(a."my_name")')
+        self.assertEqual(self._dialect.query, '')
+        self.assertEqual(self._dialect.parameters, [])
+
 
 class CreateTableDialectTestCase(TestCase):
 

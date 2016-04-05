@@ -3,7 +3,7 @@
 SQL Dialect of postrgresql engine
 
 """
-from  zope.interface import implementer, Interface
+from  zope.interface import implementer, Interface, implementedBy
 
 from aiorm import registry
 from ..query import interfaces
@@ -53,10 +53,16 @@ class Dialect:
                                             meta['alias'],
                                             where_clause)
 
-    def render_select(self, model_class):
-        meta = model_class.__meta__
-        fields = ', '.join(['{}."{}"'.format(meta['alias'], col)
-                            for col in meta['columns']])
+    def render_select(self, expression):
+        if interfaces.IFunction.implementedBy(expression.__class__):
+            model_class = expression.field.model
+            meta = model_class.__meta__
+            fields = expression.render_sql(self)
+        else:
+            model_class = expression
+            meta = model_class.__meta__
+            fields = ', '.join(['{}."{}"'.format(meta['alias'], col)
+                                for col in meta['columns']])
         self._from_model = model_class
         self.query += ('SELECT {}\n'
                        'FROM "{}" AS {}\n').format(fields,
@@ -224,6 +230,11 @@ class Dialect:
     # XXX those methods return somethink instead of righting in the query
     def render_utcnow(self, utcnow):
         return "(NOW() at time zone 'utc')"
+
+    def render_count(self, column):
+        return 'COUNT({}."{}")'.format(
+            column.model.__meta__['alias'],
+            column.name)
 
 
 @implementer(interfaces.ICreateTableDialect)

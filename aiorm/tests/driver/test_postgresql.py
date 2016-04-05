@@ -15,8 +15,8 @@ class PostgresTestCase(TestCase):
         self.aiopgpool.start()
 
     def tearDown(self):
-        super().tearDown()
         self.aiopgpool.stop()
+        super().tearDown()
 
     @asyncio.coroutine
     def mock_create_pool(self, **kwargs):
