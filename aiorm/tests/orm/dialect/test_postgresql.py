@@ -234,7 +234,7 @@ class CreateTableDialectTestCase(TestCase):
         self._dialect.render_create_table(sample.UserGroup)
         self.assertEqual(self._dialect.query,
                          """\
-CREATE TABLE IF NOT EXISTS"user_group" (
+CREATE TABLE IF NOT EXISTS "user_group" (
   "group_id" int NOT NULL,
   "user_id" int NOT NULL,
   CONSTRAINT "user_group_group_id_fkey" FOREIGN KEY ("group_id")

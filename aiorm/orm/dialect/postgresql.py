@@ -270,7 +270,7 @@ class CreateTableDialect:
                           '", "'.join(pkeys)
                           ))
         columns_declaration.extend(self.constraint)
-        self.query = ('CREATE TABLE IF NOT EXISTS"{}" (\n'
+        self.query = ('CREATE TABLE IF NOT EXISTS "{}" (\n'
                       '  {}\n'
                       ')\n').format(meta['tablename'],
                                     ',\n  '.join(columns_declaration,)
