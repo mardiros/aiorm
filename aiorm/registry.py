@@ -85,8 +85,7 @@ def get_driver(name):
     try:
         return _drivers[name]
     except KeyError:
-        raise RuntimeError('Database {} is not registred')
-
+        raise RuntimeError('Database {} is not registred'.format(name))
 
 
 @asyncio.coroutine
