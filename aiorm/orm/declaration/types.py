@@ -64,7 +64,6 @@ class UUID(SQLType):
 
     def __init__(self):
         super().__init__()
-        self.length = None
 
     def render_sql(self, renderer):
         return renderer.render_uuid(self)
