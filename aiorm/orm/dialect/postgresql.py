@@ -340,3 +340,6 @@ class CreateTableDialect:
 
     def render_boolean(self, field):
         return 'boolean'
+
+    def render_jsonb(self, field):
+        return 'jsonb'

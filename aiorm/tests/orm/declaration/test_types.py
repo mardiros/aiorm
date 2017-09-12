@@ -65,3 +65,10 @@ class TypesTestCase(TestCase):
         visitor = mock.Mock()
         boolean.render_sql(visitor)
         visitor.render_boolean.assert_called_once_with(boolean)
+
+    def test_jsonb(self):
+        from aiorm.orm.declaration import types
+        jsonb = types.JSONB()
+        visitor = mock.Mock()
+        jsonb.render_sql(visitor)
+        visitor.render_jsonb.assert_called_once_with(jsonb)

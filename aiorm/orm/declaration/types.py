@@ -67,3 +67,12 @@ class UUID(SQLType):
 
     def render_sql(self, renderer):
         return renderer.render_uuid(self)
+
+
+class JSONB(SQLType):
+
+    def __init__(self):
+        super().__init__()
+
+    def render_sql(self, renderer):
+        return renderer.render_jsonb(self)
