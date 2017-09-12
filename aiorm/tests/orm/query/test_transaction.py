@@ -87,8 +87,9 @@ class TransactionTestCase(TestCase):
             yield from registry.connect('/sample')
 
             cursor = registry.get(interfaces.IDialect)()
-            cursor.configure_mock(**{'render_rollback_transaction.return_value':
-                                          'rollback_transaction'})
+            cursor.configure_mock(
+                **{'render_rollback_transaction.'
+                   'return_value': 'rollback_transaction'})
 
             transaction = yield from Transaction('sample').begin()
             yield from transaction.rollback()
